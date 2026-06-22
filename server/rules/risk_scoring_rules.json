@@ -1,0 +1,2333 @@
+{
+  "metadata": {
+    "name": "elderly_health_risk_scoring_rules",
+    "version": "1.0",
+    "language": "zh-CN",
+    "purpose": "根据AI识别出的结构化信息，判断长者五个维度的风险等级、红旗情况和综合风险。",
+    "important_note": "本规则库用于社工服务优先级判断和资料完整度管理，不构成医学诊断、治疗建议或用药建议。",
+    "engine_behavior": [
+      "每个评分项匹配 rules 中的触发规则。",
+      "若同一评分项匹配多条规则，默认选择 score 最高的一条。",
+      "维度 raw_score 为该维度所有评分项得分之和。",
+      "score_100 = raw_score / max_score * 100。",
+      "维度风险等级按 dimension_thresholds 判断。",
+      "overall_risk_rules 按 priority 从小到大依次判断。",
+      "任意 red_flags 触发时，综合风险优先输出高优先级。"
+    ]
+  },
+  "condition_operators": {
+    "==": "字段值等于指定值",
+    "!=": "字段值不等于指定值",
+    ">": "字段值大于指定值",
+    ">=": "字段值大于或等于指定值",
+    "<": "字段值小于指定值",
+    "<=": "字段值小于或等于指定值",
+    "in": "字段值在指定数组中",
+    "not_in": "字段值不在指定数组中",
+    "exists": "字段存在且非空",
+    "not_exists": "字段不存在或为空",
+    "contains": "字段数组或文本包含指定值"
+  },
+  "expected_feature_schema": {
+    "root_key": "features",
+    "description": "AI识别结果建议先转成 extracted_features，再由规则库读取这些字段。",
+    "modules": {
+      "chronic_diseases": [
+        "confirmed_service_count",
+        "confirmed_medical_count",
+        "pending_count",
+        "has_chronic_record",
+        "has_unclear_chronic_record",
+        "key_missing_docs_count",
+        "multimorbidity_count"
+      ],
+      "monitoring": [
+        "has_recent_bp",
+        "has_recent_glucose",
+        "has_recent_hba1c",
+        "has_recent_lipid",
+        "has_recent_renal_function",
+        "relevant_monitoring_missing_count",
+        "no_relevant_monitoring"
+      ],
+      "medical_followup": [
+        "has_fixed_doctor",
+        "has_regular_followup",
+        "connected_to_dhc_cdcc",
+        "only_seek_help_when_unwell",
+        "followup_status"
+      ],
+      "medication": [
+        "has_medication_list",
+        "medication_list_complete",
+        "medication_count",
+        "forget_medication",
+        "needs_family_reminder",
+        "self_stop_medication",
+        "self_adjust_medication",
+        "medication_confusion",
+        "cannot_explain_medication_use"
+      ],
+      "health_literacy": [
+        "understands_basic_condition",
+        "understands_diet_exercise_followup",
+        "high_risk_behavior"
+      ],
+      "service_willingness": [
+        "willing_to_chronic_service",
+        "unclear_about_service",
+        "refuses_service",
+        "barrier_transport",
+        "barrier_trust"
+      ],
+      "fall": [
+        "fall_count_12_months",
+        "fall_injury",
+        "post_fall_pain",
+        "post_fall_dizziness"
+      ],
+      "mobility": [
+        "mobility_level",
+        "uses_walking_aid",
+        "can_go_out_independently",
+        "afraid_to_go_out"
+      ],
+      "home_environment": [
+        "has_minor_risk",
+        "has_major_risk",
+        "clutter",
+        "poor_lighting",
+        "slippery_floor",
+        "stairs_risk",
+        "bathroom_risk"
+      ],
+      "living": [
+        "living_status",
+        "has_emergency_contact"
+      ],
+      "caregiver": [
+        "has_caregiver",
+        "caregiver_support_level",
+        "caregiver_stress"
+      ],
+      "adl": [
+        "needs_help_count",
+        "dependent_count"
+      ],
+      "iadl": [
+        "needs_help_count",
+        "unable_count"
+      ],
+      "communication": [
+        "understands_doctor_explanation",
+        "hearing_problem_level",
+        "expression_difficulty",
+        "memory_execution",
+        "digital_tool_ability"
+      ],
+      "service_access": [
+        "knows_community_services",
+        "willing_to_use_services",
+        "refuses_service",
+        "gave_up_due_to_distance_cost_transport",
+        "service_distance_level",
+        "needs_transport_support",
+        "can_reach_service_point"
+      ]
+    }
+  },
+  "dimension_thresholds": {
+    "low": {
+      "min": 0,
+      "max": 33,
+      "label": "低风险"
+    },
+    "medium": {
+      "min": 34,
+      "max": 66,
+      "label": "中风险"
+    },
+    "high": {
+      "min": 67,
+      "max": 100,
+      "label": "高风险"
+    },
+    "red_flag_override": {
+      "label": "高优先级",
+      "description": "任意红旗触发时，综合风险优先标记为高优先级。"
+    }
+  },
+  "dimensions": [
+    {
+      "dimension_id": "CHRONIC_MANAGEMENT",
+      "dimension_name": "慢病管理风险",
+      "description": "评估慢病管理是否清晰、连续和可跟进；不判断疾病严重程度。",
+      "items": [
+        {
+          "item_id": "CM_001",
+          "item_name": "慢病记录清晰度",
+          "max_score": 2,
+          "input_fields": [
+            "chronic_diseases.has_chronic_record",
+            "chronic_diseases.has_unclear_chronic_record",
+            "chronic_diseases.pending_count",
+            "chronic_diseases.key_missing_docs_count",
+            "medication.medication_confusion"
+          ],
+          "rules": [
+            {
+              "score": 0,
+              "condition": {
+                "all": [
+                  {
+                    "field": "chronic_diseases.has_unclear_chronic_record",
+                    "operator": "==",
+                    "value": false
+                  },
+                  {
+                    "field": "chronic_diseases.key_missing_docs_count",
+                    "operator": "<=",
+                    "value": 1
+                  }
+                ]
+              },
+              "result_reason": "慢病记录相对清楚，关键资料基本完整。",
+              "system_action": "记录入档，维持常规跟进。"
+            },
+            {
+              "score": 1,
+              "condition": {
+                "any": [
+                  {
+                    "field": "chronic_diseases.pending_count",
+                    "operator": ">=",
+                    "value": 1
+                  },
+                  {
+                    "field": "chronic_diseases.has_unclear_chronic_record",
+                    "operator": "==",
+                    "value": true
+                  },
+                  {
+                    "field": "chronic_diseases.key_missing_docs_count",
+                    "operator": "in",
+                    "value": [
+                      2,
+                      3
+                    ]
+                  }
+                ]
+              },
+              "result_reason": "存在慢病自述或待确认线索，资料仍不完整。",
+              "system_action": "提示社工补充诊断文件、体检报告或药物清单。"
+            },
+            {
+              "score": 2,
+              "condition": {
+                "any": [
+                  {
+                    "all": [
+                      {
+                        "field": "chronic_diseases.has_unclear_chronic_record",
+                        "operator": "==",
+                        "value": true
+                      },
+                      {
+                        "field": "medication.medication_confusion",
+                        "operator": "==",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "field": "chronic_diseases.key_missing_docs_count",
+                    "operator": ">=",
+                    "value": 4
+                  }
+                ]
+              },
+              "result_reason": "慢病记录明显不清，或诊断、用药、监测资料多项缺失。",
+              "system_action": "标记为关键资料缺失，建议优先人工确认慢病情况。"
+            }
+          ],
+          "data_sources": [
+            "体检报告",
+            "门诊纸",
+            "药物清单",
+            "长者自述",
+            "照顾者访谈"
+          ]
+        },
+        {
+          "item_id": "CM_002",
+          "item_name": "近期监测资料",
+          "max_score": 2,
+          "input_fields": [
+            "monitoring.has_recent_bp",
+            "monitoring.has_recent_glucose",
+            "monitoring.has_recent_hba1c",
+            "monitoring.has_recent_lipid",
+            "monitoring.has_recent_renal_function",
+            "monitoring.relevant_monitoring_missing_count",
+            "monitoring.no_relevant_monitoring"
+          ],
+          "rules": [
+            {
+              "score": 0,
+              "condition": {
+                "all": [
+                  {
+                    "field": "monitoring.no_relevant_monitoring",
+                    "operator": "==",
+                    "value": false
+                  },
+                  {
+                    "field": "monitoring.relevant_monitoring_missing_count",
+                    "operator": "<=",
+                    "value": 1
+                  }
+                ]
+              },
+              "result_reason": "有与已识别慢病相关的近期监测资料。",
+              "system_action": "维持常规资料更新。"
+            },
+            {
+              "score": 1,
+              "condition": {
+                "all": [
+                  {
+                    "field": "monitoring.no_relevant_monitoring",
+                    "operator": "==",
+                    "value": false
+                  },
+                  {
+                    "field": "monitoring.relevant_monitoring_missing_count",
+                    "operator": "in",
+                    "value": [
+                      2,
+                      3
+                    ]
+                  }
+                ]
+              },
+              "result_reason": "部分近期监测资料缺失或较久未更新。",
+              "system_action": "提示补充缺失的血压、血糖、HbA1c、血脂或肾功能资料。"
+            },
+            {
+              "score": 2,
+              "condition": {
+                "any": [
+                  {
+                    "field": "monitoring.no_relevant_monitoring",
+                    "operator": "==",
+                    "value": true
+                  },
+                  {
+                    "field": "monitoring.relevant_monitoring_missing_count",
+                    "operator": ">=",
+                    "value": 4
+                  }
+                ]
+              },
+              "result_reason": "长期没有相关监测记录，或无法提供任何关键监测资料。",
+              "system_action": "标记为关键缺失，建议社工优先补充近期监测资料。"
+            }
+          ],
+          "data_sources": [
+            "化验单",
+            "体检表",
+            "家用血压记录",
+            "家用血糖记录"
+          ]
+        },
+        {
+          "item_id": "CM_003",
+          "item_name": "连续医疗跟进",
+          "max_score": 2,
+          "input_fields": [
+            "medical_followup.has_fixed_doctor",
+            "medical_followup.has_regular_followup",
+            "medical_followup.connected_to_dhc_cdcc",
+            "medical_followup.only_seek_help_when_unwell",
+            "medical_followup.followup_status"
+          ],
+          "rules": [
+            {
+              "score": 0,
+              "condition": {
+                "any": [
+                  {
+                    "field": "medical_followup.has_fixed_doctor",
+                    "operator": "==",
+                    "value": true
+                  },
+                  {
+                    "field": "medical_followup.connected_to_dhc_cdcc",
+                    "operator": "==",
+                    "value": true
+                  },
+                  {
+                    "field": "medical_followup.has_regular_followup",
+                    "operator": "==",
+                    "value": true
+                  }
+                ]
+              },
+              "result_reason": "有固定家庭医生、DHC/CDCC或定期复诊安排。",
+              "system_action": "记录现有医疗跟进渠道。"
+            },
+            {
+              "score": 1,
+              "condition": {
+                "any": [
+                  {
+                    "field": "medical_followup.followup_status",
+                    "operator": "==",
+                    "value": "irregular"
+                  },
+                  {
+                    "all": [
+                      {
+                        "field": "medical_followup.has_regular_followup",
+                        "operator": "==",
+                        "value": true
+                      },
+                      {
+                        "field": "medical_followup.has_fixed_doctor",
+                        "operator": "==",
+                        "value": false
+                      }
+                    ]
+                  }
+                ]
+              },
+              "result_reason": "有复诊，但医生或服务渠道不固定。",
+              "system_action": "建议社工了解复诊安排是否稳定。"
+            },
+            {
+              "score": 2,
+              "condition": {
+                "any": [
+                  {
+                    "field": "medical_followup.followup_status",
+                    "operator": "==",
+                    "value": "none"
+                  },
+                  {
+                    "field": "medical_followup.only_seek_help_when_unwell",
+                    "operator": "==",
+                    "value": true
+                  },
+                  {
+                    "all": [
+                      {
+                        "field": "medical_followup.has_fixed_doctor",
+                        "operator": "==",
+                        "value": false
+                      },
+                      {
+                        "field": "medical_followup.has_regular_followup",
+                        "operator": "==",
+                        "value": false
+                      },
+                      {
+                        "field": "medical_followup.connected_to_dhc_cdcc",
+                        "operator": "==",
+                        "value": false
+                      }
+                    ]
+                  }
+                ]
+              },
+              "result_reason": "无固定医生、长期不复诊，或只在不舒服时求医。",
+              "system_action": "建议了解家庭医生、DHC/CDCC或其他基层医疗服务。"
+            }
+          ],
+          "data_sources": [
+            "问卷",
+            "访谈",
+            "预约单",
+            "过往服务记录"
+          ]
+        },
+        {
+          "item_id": "CM_004",
+          "item_name": "用药与依从性",
+          "max_score": 2,
+          "input_fields": [
+            "medication.has_medication_list",
+            "medication.medication_list_complete",
+            "medication.forget_medication",
+            "medication.needs_family_reminder",
+            "medication.self_stop_medication",
+            "medication.self_adjust_medication",
+            "medication.medication_confusion",
+            "medication.cannot_explain_medication_use"
+          ],
+          "rules": [
+            {
+              "score": 0,
+              "condition": {
+                "all": [
+                  {
+                    "field": "medication.has_medication_list",
+                    "operator": "==",
+                    "value": true
+                  },
+                  {
+                    "field": "medication.medication_list_complete",
+                    "operator": "==",
+                    "value": true
+                  },
+                  {
+                    "field": "medication.forget_medication",
+                    "operator": "==",
+                    "value": false
+                  },
+                  {
+                    "field": "medication.medication_confusion",
+                    "operator": "==",
+                    "value": false
+                  }
+                ]
+              },
+              "result_reason": "药物资料清楚，长者基本能够按时服药。",
+              "system_action": "记录药物清单来源，维持常规更新。"
+            },
+            {
+              "score": 1,
+              "condition": {
+                "any": [
+                  {
+                    "field": "medication.medication_list_complete",
+                    "operator": "==",
+                    "value": false
+                  },
+                  {
+                    "field": "medication.forget_medication",
+                    "operator": "==",
+                    "value": true
+                  },
+                  {
+                    "field": "medication.needs_family_reminder",
+                    "operator": "==",
+                    "value": true
+                  }
+                ]
+              },
+              "result_reason": "药物资料部分缺失，或长者偶尔忘记服药，需要提醒。",
+              "system_action": "提示补充完整药物清单，并确认是否需要照顾者提醒。"
+            },
+            {
+              "score": 2,
+              "condition": {
+                "any": [
+                  {
+                    "field": "medication.medication_confusion",
+                    "operator": "==",
+                    "value": true
+                  },
+                  {
+                    "field": "medication.self_stop_medication",
+                    "operator": "==",
+                    "value": true
+                  },
+                  {
+                    "field": "medication.self_adjust_medication",
+                    "operator": "==",
+                    "value": true
+                  },
+                  {
+                    "field": "medication.cannot_explain_medication_use",
+                    "operator": "==",
+                    "value": true
+                  }
+                ]
+              },
+              "result_reason": "存在服药混乱、自行停药/改药，或完全说不清药物用途。",
+              "system_action": "标记需专业人员复核；系统不提供具体用药建议。"
+            }
+          ],
+          "data_sources": [
+            "药袋照片",
+            "药物清单",
+            "照顾者反馈",
+            "访谈记录"
+          ]
+        },
+        {
+          "item_id": "CM_005",
+          "item_name": "健康理解与自我管理",
+          "max_score": 2,
+          "input_fields": [
+            "health_literacy.understands_basic_condition",
+            "health_literacy.understands_diet_exercise_followup",
+            "health_literacy.high_risk_behavior"
+          ],
+          "rules": [
+            {
+              "score": 0,
+              "condition": {
+                "all": [
+                  {
+                    "field": "health_literacy.understands_basic_condition",
+                    "operator": "==",
+                    "value": "good"
+                  },
+                  {
+                    "field": "health_literacy.understands_diet_exercise_followup",
+                    "operator": "==",
+                    "value": "good"
+                  },
+                  {
+                    "field": "health_literacy.high_risk_behavior",
+                    "operator": "==",
+                    "value": false
+                  }
+                ]
+              },
+              "result_reason": "长者知道基本病情，并理解饮食、运动和复诊重要性。",
+              "system_action": "可生成简要版健康说明。"
+            },
+            {
+              "score": 1,
+              "condition": {
+                "any": [
+                  {
+                    "field": "health_literacy.understands_basic_condition",
+                    "operator": "==",
+                    "value": "partial"
+                  },
+                  {
+                    "field": "health_literacy.understands_diet_exercise_followup",
+                    "operator": "==",
+                    "value": "partial"
+                  }
+                ]
+              },
+              "result_reason": "长者只知道血压高或血糖高等简单信息，但不太理解管理方法。",
+              "system_action": "生成长者易读版解释，帮助社工说明。"
+            },
+            {
+              "score": 2,
+              "condition": {
+                "any": [
+                  {
+                    "field": "health_literacy.understands_basic_condition",
+                    "operator": "==",
+                    "value": "poor"
+                  },
+                  {
+                    "field": "health_literacy.understands_diet_exercise_followup",
+                    "operator": "==",
+                    "value": "poor"
+                  },
+                  {
+                    "field": "health_literacy.high_risk_behavior",
+                    "operator": "==",
+                    "value": true
+                  }
+                ]
+              },
+              "result_reason": "长者不理解病情或不重视控制，存在明显高风险行为。",
+              "system_action": "生成更简单的解释话术，并建议社工重点沟通。"
+            }
+          ],
+          "data_sources": [
+            "长者问答",
+            "社工观察",
+            "访谈记录"
+          ]
+        },
+        {
+          "item_id": "CM_006",
+          "item_name": "慢病服务连接意愿",
+          "max_score": 2,
+          "input_fields": [
+            "service_willingness.willing_to_chronic_service",
+            "service_willingness.unclear_about_service",
+            "service_willingness.refuses_service",
+            "service_willingness.barrier_transport",
+            "service_willingness.barrier_trust"
+          ],
+          "rules": [
+            {
+              "score": 0,
+              "condition": {
+                "all": [
+                  {
+                    "field": "service_willingness.willing_to_chronic_service",
+                    "operator": "==",
+                    "value": true
+                  },
+                  {
+                    "field": "service_willingness.unclear_about_service",
+                    "operator": "==",
+                    "value": false
+                  }
+                ]
+              },
+              "result_reason": "长者愿意接受DHC/CDCC、家庭医生或健康教育服务。",
+              "system_action": "可进入资源匹配流程。"
+            },
+            {
+              "score": 1,
+              "condition": {
+                "any": [
+                  {
+                    "field": "service_willingness.unclear_about_service",
+                    "operator": "==",
+                    "value": true
+                  },
+                  {
+                    "field": "service_willingness.barrier_transport",
+                    "operator": "==",
+                    "value": true
+                  }
+                ]
+              },
+              "result_reason": "长者不清楚相关服务，或存在交通/行动障碍，需要社工解释。",
+              "system_action": "推荐可及性更高的资源，并生成服务解释话术。"
+            },
+            {
+              "score": 2,
+              "condition": {
+                "any": [
+                  {
+                    "field": "service_willingness.refuses_service",
+                    "operator": "==",
+                    "value": true
+                  },
+                  {
+                    "field": "service_willingness.barrier_trust",
+                    "operator": "==",
+                    "value": true
+                  }
+                ]
+              },
+              "result_reason": "长者明显拒绝服务，或因信任、交通、行动等问题无法使用服务。",
+              "system_action": "生成拒绝原因记录和替代跟进方案。"
+            }
+          ],
+          "data_sources": [
+            "问卷",
+            "访谈",
+            "社工记录"
+          ]
+        },
+        {
+          "item_id": "CM_007",
+          "item_name": "多病共存与管理复杂度",
+          "max_score": 2,
+          "input_fields": [
+            "chronic_diseases.confirmed_service_count",
+            "chronic_diseases.multimorbidity_count",
+            "medication.medication_count",
+            "chronic_diseases.key_missing_docs_count"
+          ],
+          "rules": [
+            {
+              "score": 0,
+              "condition": {
+                "all": [
+                  {
+                    "field": "chronic_diseases.confirmed_service_count",
+                    "operator": "<=",
+                    "value": 1
+                  },
+                  {
+                    "field": "chronic_diseases.key_missing_docs_count",
+                    "operator": "<=",
+                    "value": 1
+                  }
+                ]
+              },
+              "result_reason": "慢病数量少，管理复杂度较低。",
+              "system_action": "维持常规跟进。"
+            },
+            {
+              "score": 1,
+              "condition": {
+                "any": [
+                  {
+                    "field": "chronic_diseases.confirmed_service_count",
+                    "operator": "==",
+                    "value": 2
+                  },
+                  {
+                    "field": "medication.medication_count",
+                    "operator": ">=",
+                    "value": 5
+                  }
+                ]
+              },
+              "result_reason": "存在多病共存或多重用药，管理复杂度增加。",
+              "system_action": "提示社工关注多病共存和用药资料完整性。"
+            },
+            {
+              "score": 2,
+              "condition": {
+                "all": [
+                  {
+                    "field": "chronic_diseases.confirmed_service_count",
+                    "operator": ">=",
+                    "value": 3
+                  },
+                  {
+                    "field": "chronic_diseases.key_missing_docs_count",
+                    "operator": ">=",
+                    "value": 2
+                  }
+                ]
+              },
+              "result_reason": "多病共存明显，且关键资料缺失，慢病管理复杂度高。",
+              "system_action": "建议优先整理诊断、监测、药物和复诊资料。"
+            }
+          ],
+          "data_sources": [
+            "慢病判断结果",
+            "药物清单",
+            "体检报告",
+            "访谈记录"
+          ]
+        }
+      ]
+    },
+    {
+      "dimension_id": "FALL_MOBILITY",
+      "dimension_name": "跌倒与行动风险",
+      "description": "评估长者近期跌倒、行动能力、家居环境和跌倒后支持情况。",
+      "items": [
+        {
+          "item_id": "FM_001",
+          "item_name": "近期跌倒史",
+          "max_score": 2,
+          "input_fields": [
+            "fall.fall_count_12_months",
+            "fall.fall_injury",
+            "fall.post_fall_pain",
+            "fall.post_fall_dizziness"
+          ],
+          "rules": [
+            {
+              "score": 0,
+              "condition": {
+                "field": "fall.fall_count_12_months",
+                "operator": "==",
+                "value": 0
+              },
+              "result_reason": "过去6–12个月无跌倒记录。",
+              "system_action": "维持常规跌倒风险观察。"
+            },
+            {
+              "score": 1,
+              "condition": {
+                "all": [
+                  {
+                    "field": "fall.fall_count_12_months",
+                    "operator": "==",
+                    "value": 1
+                  },
+                  {
+                    "field": "fall.fall_injury",
+                    "operator": "==",
+                    "value": false
+                  }
+                ]
+              },
+              "result_reason": "过去6–12个月曾跌倒1次，但无明显伤害。",
+              "system_action": "建议社工确认跌倒原因和家居环境。"
+            },
+            {
+              "score": 2,
+              "condition": {
+                "any": [
+                  {
+                    "field": "fall.fall_count_12_months",
+                    "operator": ">=",
+                    "value": 2
+                  },
+                  {
+                    "field": "fall.fall_injury",
+                    "operator": "==",
+                    "value": true
+                  },
+                  {
+                    "field": "fall.post_fall_pain",
+                    "operator": "==",
+                    "value": true
+                  },
+                  {
+                    "field": "fall.post_fall_dizziness",
+                    "operator": "==",
+                    "value": true
+                  }
+                ]
+              },
+              "result_reason": "存在多次跌倒，或跌倒后疼痛、头晕、受伤。",
+              "system_action": "高风险时提示优先人工确认。"
+            }
+          ],
+          "data_sources": [
+            "家访记录",
+            "长者自述",
+            "照顾者反馈"
+          ]
+        },
+        {
+          "item_id": "FM_002",
+          "item_name": "行动能力",
+          "max_score": 2,
+          "input_fields": [
+            "mobility.mobility_level",
+            "mobility.uses_walking_aid",
+            "mobility.can_go_out_independently",
+            "mobility.afraid_to_go_out"
+          ],
+          "rules": [
+            {
+              "score": 0,
+              "condition": {
+                "all": [
+                  {
+                    "field": "mobility.mobility_level",
+                    "operator": "==",
+                    "value": "independent"
+                  },
+                  {
+                    "field": "mobility.can_go_out_independently",
+                    "operator": "==",
+                    "value": true
+                  }
+                ]
+              },
+              "result_reason": "行动稳定，可独立外出。",
+              "system_action": "维持常规观察。"
+            },
+            {
+              "score": 1,
+              "condition": {
+                "any": [
+                  {
+                    "field": "mobility.mobility_level",
+                    "operator": "in",
+                    "value": [
+                      "slow",
+                      "needs_handrail"
+                    ]
+                  },
+                  {
+                    "field": "mobility.uses_walking_aid",
+                    "operator": "==",
+                    "value": true
+                  }
+                ]
+              },
+              "result_reason": "行动较慢，需要扶手、助行器或偶尔协助。",
+              "system_action": "推荐跌倒预防或复康相关资源。"
+            },
+            {
+              "score": 2,
+              "condition": {
+                "any": [
+                  {
+                    "field": "mobility.mobility_level",
+                    "operator": "in",
+                    "value": [
+                      "needs_walking_aid",
+                      "wheelchair",
+                      "mostly_homebound"
+                    ]
+                  },
+                  {
+                    "field": "mobility.can_go_out_independently",
+                    "operator": "==",
+                    "value": false
+                  },
+                  {
+                    "field": "mobility.afraid_to_go_out",
+                    "operator": "==",
+                    "value": true
+                  }
+                ]
+              },
+              "result_reason": "明显行动不便，需要助行器或不敢外出。",
+              "system_action": "推荐复康、家居安全评估或上门支援资源。"
+            }
+          ],
+          "data_sources": [
+            "社工观察",
+            "ADL/IADL",
+            "访谈记录"
+          ]
+        },
+        {
+          "item_id": "FM_003",
+          "item_name": "家居环境风险",
+          "max_score": 2,
+          "input_fields": [
+            "home_environment.has_minor_risk",
+            "home_environment.has_major_risk",
+            "home_environment.clutter",
+            "home_environment.poor_lighting",
+            "home_environment.slippery_floor",
+            "home_environment.stairs_risk",
+            "home_environment.bathroom_risk",
+            "mobility.can_go_out_independently"
+          ],
+          "rules": [
+            {
+              "score": 0,
+              "condition": {
+                "all": [
+                  {
+                    "field": "home_environment.has_minor_risk",
+                    "operator": "==",
+                    "value": false
+                  },
+                  {
+                    "field": "home_environment.has_major_risk",
+                    "operator": "==",
+                    "value": false
+                  }
+                ]
+              },
+              "result_reason": "家居环境基本安全。",
+              "system_action": "维持常规观察。"
+            },
+            {
+              "score": 1,
+              "condition": {
+                "any": [
+                  {
+                    "field": "home_environment.has_minor_risk",
+                    "operator": "==",
+                    "value": true
+                  },
+                  {
+                    "field": "home_environment.clutter",
+                    "operator": "==",
+                    "value": true
+                  },
+                  {
+                    "field": "home_environment.poor_lighting",
+                    "operator": "==",
+                    "value": true
+                  }
+                ]
+              },
+              "result_reason": "家中存在轻度风险，例如杂物、照明不足。",
+              "system_action": "建议社工提示改善家居环境。"
+            },
+            {
+              "score": 2,
+              "condition": {
+                "any": [
+                  {
+                    "field": "home_environment.has_major_risk",
+                    "operator": "==",
+                    "value": true
+                  },
+                  {
+                    "all": [
+                      {
+                        "field": "mobility.can_go_out_independently",
+                        "operator": "==",
+                        "value": false
+                      },
+                      {
+                        "any": [
+                          {
+                            "field": "home_environment.slippery_floor",
+                            "operator": "==",
+                            "value": true
+                          },
+                          {
+                            "field": "home_environment.stairs_risk",
+                            "operator": "==",
+                            "value": true
+                          },
+                          {
+                            "field": "home_environment.bathroom_risk",
+                            "operator": "==",
+                            "value": true
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              "result_reason": "家中存在地滑、楼梯、浴室等高风险因素，且长者行动不便。",
+              "system_action": "建议家居安全评估。"
+            }
+          ],
+          "data_sources": [
+            "家访记录",
+            "照片",
+            "社工观察"
+          ]
+        },
+        {
+          "item_id": "FM_004",
+          "item_name": "跌倒后支持",
+          "max_score": 2,
+          "input_fields": [
+            "living.living_status",
+            "living.has_emergency_contact",
+            "caregiver.has_caregiver",
+            "caregiver.caregiver_support_level"
+          ],
+          "rules": [
+            {
+              "score": 0,
+              "condition": {
+                "any": [
+                  {
+                    "field": "living.living_status",
+                    "operator": "==",
+                    "value": "with_family"
+                  },
+                  {
+                    "field": "caregiver.caregiver_support_level",
+                    "operator": "==",
+                    "value": "stable"
+                  }
+                ]
+              },
+              "result_reason": "跌倒后有人可协助。",
+              "system_action": "记录紧急联系人和支持网络。"
+            },
+            {
+              "score": 1,
+              "condition": {
+                "any": [
+                  {
+                    "field": "caregiver.caregiver_support_level",
+                    "operator": "in",
+                    "value": [
+                      "regular",
+                      "some_support",
+                      "unstable"
+                    ]
+                  },
+                  {
+                    "field": "living.has_emergency_contact",
+                    "operator": "==",
+                    "value": true
+                  }
+                ]
+              },
+              "result_reason": "有照顾者或紧急联系人，但支持不稳定。",
+              "system_action": "建议确认紧急联系机制。"
+            },
+            {
+              "score": 2,
+              "condition": {
+                "all": [
+                  {
+                    "field": "living.living_status",
+                    "operator": "==",
+                    "value": "alone"
+                  },
+                  {
+                    "any": [
+                      {
+                        "field": "caregiver.caregiver_support_level",
+                        "operator": "in",
+                        "value": [
+                          "none",
+                          "unstable"
+                        ]
+                      },
+                      {
+                        "field": "living.has_emergency_contact",
+                        "operator": "==",
+                        "value": false
+                      }
+                    ]
+                  }
+                ]
+              },
+              "result_reason": "长者独居，跌倒后可能无人及时发现。",
+              "system_action": "综合风险上调，建议优先确认紧急联系人和支援服务。"
+            }
+          ],
+          "data_sources": [
+            "居住情况",
+            "紧急联系人",
+            "家访记录"
+          ]
+        }
+      ]
+    },
+    {
+      "dimension_id": "DAILY_FUNCTION",
+      "dimension_name": "生活能力风险",
+      "description": "评估ADL/IADL、服药管理和外出能力，判断独立生活与服务使用能力。",
+      "items": [
+        {
+          "item_id": "DF_001",
+          "item_name": "基本生活能力 ADL",
+          "max_score": 2,
+          "input_fields": [
+            "adl.needs_help_count",
+            "adl.dependent_count"
+          ],
+          "rules": [
+            {
+              "score": 0,
+              "condition": {
+                "all": [
+                  {
+                    "field": "adl.needs_help_count",
+                    "operator": "==",
+                    "value": 0
+                  },
+                  {
+                    "field": "adl.dependent_count",
+                    "operator": "==",
+                    "value": 0
+                  }
+                ]
+              },
+              "result_reason": "进食、穿衣、如厕、洗澡、移动等基本独立。",
+              "system_action": "维持常规观察。"
+            },
+            {
+              "score": 1,
+              "condition": {
+                "any": [
+                  {
+                    "field": "adl.needs_help_count",
+                    "operator": "in",
+                    "value": [
+                      1,
+                      2
+                    ]
+                  },
+                  {
+                    "field": "adl.dependent_count",
+                    "operator": "==",
+                    "value": 1
+                  }
+                ]
+              },
+              "result_reason": "部分基本生活活动需要协助。",
+              "system_action": "建议评估是否需要家居照顾或日间服务。"
+            },
+            {
+              "score": 2,
+              "condition": {
+                "any": [
+                  {
+                    "field": "adl.needs_help_count",
+                    "operator": ">=",
+                    "value": 3
+                  },
+                  {
+                    "field": "adl.dependent_count",
+                    "operator": ">=",
+                    "value": 2
+                  }
+                ]
+              },
+              "result_reason": "多项基本生活活动需要协助。",
+              "system_action": "推荐家居照顾、日间服务或照护支援。"
+            }
+          ],
+          "data_sources": [
+            "社工评估",
+            "家访记录",
+            "照顾者反馈"
+          ]
+        },
+        {
+          "item_id": "DF_002",
+          "item_name": "工具性日常生活能力 IADL",
+          "max_score": 2,
+          "input_fields": [
+            "iadl.needs_help_count",
+            "iadl.unable_count"
+          ],
+          "rules": [
+            {
+              "score": 0,
+              "condition": {
+                "all": [
+                  {
+                    "field": "iadl.needs_help_count",
+                    "operator": "==",
+                    "value": 0
+                  },
+                  {
+                    "field": "iadl.unable_count",
+                    "operator": "==",
+                    "value": 0
+                  }
+                ]
+              },
+              "result_reason": "可独立购物、做饭、外出和管理事务。",
+              "system_action": "维持常规观察。"
+            },
+            {
+              "score": 1,
+              "condition": {
+                "any": [
+                  {
+                    "field": "iadl.needs_help_count",
+                    "operator": "in",
+                    "value": [
+                      1,
+                      2
+                    ]
+                  },
+                  {
+                    "field": "iadl.unable_count",
+                    "operator": "==",
+                    "value": 1
+                  }
+                ]
+              },
+              "result_reason": "部分工具性日常生活项目需要协助。",
+              "system_action": "推荐社区支援、陪诊或生活协助资源。"
+            },
+            {
+              "score": 2,
+              "condition": {
+                "any": [
+                  {
+                    "field": "iadl.needs_help_count",
+                    "operator": ">=",
+                    "value": 3
+                  },
+                  {
+                    "field": "iadl.unable_count",
+                    "operator": ">=",
+                    "value": 2
+                  }
+                ]
+              },
+              "result_reason": "无法独立处理购物、做饭、外出或服药管理等事务。",
+              "system_action": "推荐送餐、陪诊、社区支援或家居照顾服务。"
+            }
+          ],
+          "data_sources": [
+            "社工访谈",
+            "照顾者反馈",
+            "家访记录"
+          ]
+        },
+        {
+          "item_id": "DF_003",
+          "item_name": "服药管理能力",
+          "max_score": 2,
+          "input_fields": [
+            "medication.forget_medication",
+            "medication.needs_family_reminder",
+            "medication.medication_confusion",
+            "medication.self_stop_medication"
+          ],
+          "rules": [
+            {
+              "score": 0,
+              "condition": {
+                "all": [
+                  {
+                    "field": "medication.forget_medication",
+                    "operator": "==",
+                    "value": false
+                  },
+                  {
+                    "field": "medication.medication_confusion",
+                    "operator": "==",
+                    "value": false
+                  }
+                ]
+              },
+              "result_reason": "可自行管理药物。",
+              "system_action": "维持常规跟进。"
+            },
+            {
+              "score": 1,
+              "condition": {
+                "any": [
+                  {
+                    "field": "medication.forget_medication",
+                    "operator": "==",
+                    "value": true
+                  },
+                  {
+                    "field": "medication.needs_family_reminder",
+                    "operator": "==",
+                    "value": true
+                  }
+                ]
+              },
+              "result_reason": "需要提醒服药。",
+              "system_action": "建议设置提醒或联系照顾者协助。"
+            },
+            {
+              "score": 2,
+              "condition": {
+                "any": [
+                  {
+                    "field": "medication.medication_confusion",
+                    "operator": "==",
+                    "value": true
+                  },
+                  {
+                    "field": "medication.self_stop_medication",
+                    "operator": "==",
+                    "value": true
+                  }
+                ]
+              },
+              "result_reason": "无法自行管理药物，容易漏服、重复服药或自行停药。",
+              "system_action": "建议社工联系照顾者或药剂师/医生确认。"
+            }
+          ],
+          "data_sources": [
+            "药物清单",
+            "照顾者反馈",
+            "访谈记录"
+          ]
+        },
+        {
+          "item_id": "DF_004",
+          "item_name": "外出能力",
+          "max_score": 2,
+          "input_fields": [
+            "mobility.can_go_out_independently",
+            "mobility.mobility_level",
+            "service_access.needs_transport_support",
+            "service_access.can_reach_service_point"
+          ],
+          "rules": [
+            {
+              "score": 0,
+              "condition": {
+                "all": [
+                  {
+                    "field": "mobility.can_go_out_independently",
+                    "operator": "==",
+                    "value": true
+                  },
+                  {
+                    "field": "service_access.can_reach_service_point",
+                    "operator": "==",
+                    "value": true
+                  }
+                ]
+              },
+              "result_reason": "可自行前往服务点。",
+              "system_action": "可推荐线下社区服务。"
+            },
+            {
+              "score": 1,
+              "condition": {
+                "any": [
+                  {
+                    "field": "service_access.needs_transport_support",
+                    "operator": "==",
+                    "value": true
+                  },
+                  {
+                    "field": "mobility.mobility_level",
+                    "operator": "in",
+                    "value": [
+                      "slow",
+                      "needs_handrail",
+                      "needs_walking_aid"
+                    ]
+                  }
+                ]
+              },
+              "result_reason": "外出需要陪同或交通协助。",
+              "system_action": "资源推荐时加入交通支援或陪诊选项。"
+            },
+            {
+              "score": 2,
+              "condition": {
+                "any": [
+                  {
+                    "field": "mobility.can_go_out_independently",
+                    "operator": "==",
+                    "value": false
+                  },
+                  {
+                    "field": "mobility.mobility_level",
+                    "operator": "in",
+                    "value": [
+                      "wheelchair",
+                      "mostly_homebound"
+                    ]
+                  },
+                  {
+                    "field": "service_access.can_reach_service_point",
+                    "operator": "==",
+                    "value": false
+                  }
+                ]
+              },
+              "result_reason": "因行动不便基本不愿或不能外出。",
+              "system_action": "资源推荐优先考虑近距离、电话或上门支援。"
+            }
+          ],
+          "data_sources": [
+            "访谈",
+            "社工记录",
+            "行动能力观察"
+          ]
+        }
+      ]
+    },
+    {
+      "dimension_id": "COGNITIVE_COMMUNICATION",
+      "dimension_name": "认知沟通与健康理解风险",
+      "description": "评估长者是否能理解、记住并执行健康管理安排；不作为认知障碍诊断。",
+      "items": [
+        {
+          "item_id": "CC_001",
+          "item_name": "理解医生解释",
+          "max_score": 2,
+          "input_fields": [
+            "communication.understands_doctor_explanation"
+          ],
+          "rules": [
+            {
+              "score": 0,
+              "condition": {
+                "field": "communication.understands_doctor_explanation",
+                "operator": "==",
+                "value": "good"
+              },
+              "result_reason": "能基本理解医生说明。",
+              "system_action": "可生成简要说明。"
+            },
+            {
+              "score": 1,
+              "condition": {
+                "field": "communication.understands_doctor_explanation",
+                "operator": "==",
+                "value": "partial"
+              },
+              "result_reason": "部分医学名词听不懂。",
+              "system_action": "生成长者易读版解释。"
+            },
+            {
+              "score": 2,
+              "condition": {
+                "field": "communication.understands_doctor_explanation",
+                "operator": "==",
+                "value": "poor"
+              },
+              "result_reason": "基本听不懂医生解释，无法复述重点。",
+              "system_action": "建议使用大字版、简单语言，并邀请照顾者共同解释。"
+            }
+          ],
+          "data_sources": [
+            "长者访谈",
+            "社工观察"
+          ]
+        },
+        {
+          "item_id": "CC_002",
+          "item_name": "听力 / 沟通",
+          "max_score": 2,
+          "input_fields": [
+            "communication.hearing_problem_level",
+            "communication.expression_difficulty"
+          ],
+          "rules": [
+            {
+              "score": 0,
+              "condition": {
+                "all": [
+                  {
+                    "field": "communication.hearing_problem_level",
+                    "operator": "==",
+                    "value": "none"
+                  },
+                  {
+                    "field": "communication.expression_difficulty",
+                    "operator": "==",
+                    "value": false
+                  }
+                ]
+              },
+              "result_reason": "听力和表达基本正常。",
+              "system_action": "正常沟通即可。"
+            },
+            {
+              "score": 1,
+              "condition": {
+                "any": [
+                  {
+                    "field": "communication.hearing_problem_level",
+                    "operator": "==",
+                    "value": "mild"
+                  },
+                  {
+                    "field": "communication.expression_difficulty",
+                    "operator": "==",
+                    "value": true
+                  }
+                ]
+              },
+              "result_reason": "听力下降或表达稍有困难，需要重复解释。",
+              "system_action": "建议放慢语速，使用纸本或大字说明。"
+            },
+            {
+              "score": 2,
+              "condition": {
+                "field": "communication.hearing_problem_level",
+                "operator": "in",
+                "value": [
+                  "moderate",
+                  "severe"
+                ]
+              },
+              "result_reason": "听力明显影响沟通，或难以表达需求。",
+              "system_action": "建议使用纸本、大字、照顾者共同解释。"
+            }
+          ],
+          "data_sources": [
+            "社工观察",
+            "家属反馈"
+          ]
+        },
+        {
+          "item_id": "CC_003",
+          "item_name": "记忆与执行",
+          "max_score": 2,
+          "input_fields": [
+            "communication.memory_execution",
+            "medication.forget_medication"
+          ],
+          "rules": [
+            {
+              "score": 0,
+              "condition": {
+                "field": "communication.memory_execution",
+                "operator": "==",
+                "value": "normal"
+              },
+              "result_reason": "能记得复诊、服药和服务安排。",
+              "system_action": "维持常规提醒。"
+            },
+            {
+              "score": 1,
+              "condition": {
+                "any": [
+                  {
+                    "field": "communication.memory_execution",
+                    "operator": "==",
+                    "value": "sometimes_forget"
+                  },
+                  {
+                    "field": "medication.forget_medication",
+                    "operator": "==",
+                    "value": true
+                  }
+                ]
+              },
+              "result_reason": "偶尔忘记复诊、服药或服务安排。",
+              "system_action": "生成提醒任务。"
+            },
+            {
+              "score": 2,
+              "condition": {
+                "field": "communication.memory_execution",
+                "operator": "==",
+                "value": "often_forget"
+              },
+              "result_reason": "经常忘记服药、复诊或服务安排。",
+              "system_action": "建议建立提醒机制，必要时联系照顾者。"
+            }
+          ],
+          "data_sources": [
+            "访谈",
+            "照顾者反馈",
+            "社工观察"
+          ]
+        },
+        {
+          "item_id": "CC_004",
+          "item_name": "数字工具使用",
+          "max_score": 2,
+          "input_fields": [
+            "communication.digital_tool_ability"
+          ],
+          "rules": [
+            {
+              "score": 0,
+              "condition": {
+                "field": "communication.digital_tool_ability",
+                "operator": "in",
+                "value": [
+                  "smartphone",
+                  "whatsapp",
+                  "app"
+                ]
+              },
+              "result_reason": "能使用电话、WhatsApp或相关App。",
+              "system_action": "可通过电子方式发送提醒或资料。"
+            },
+            {
+              "score": 1,
+              "condition": {
+                "field": "communication.digital_tool_ability",
+                "operator": "==",
+                "value": "basic_phone"
+              },
+              "result_reason": "可简单使用电话，但需要协助使用复杂功能。",
+              "system_action": "优先使用电话联系，必要时提供纸本资料。"
+            },
+            {
+              "score": 2,
+              "condition": {
+                "field": "communication.digital_tool_ability",
+                "operator": "in",
+                "value": [
+                  "phone_only",
+                  "cannot_use",
+                  "refuse"
+                ]
+              },
+              "result_reason": "不会用或抗拒手机/App。",
+              "system_action": "系统输出改为电话、纸本或社工解释。"
+            }
+          ],
+          "data_sources": [
+            "长者问卷",
+            "访谈记录"
+          ]
+        }
+      ]
+    },
+    {
+      "dimension_id": "SOCIAL_ACCESS",
+      "dimension_name": "社会支持与服务可及性风险",
+      "description": "评估居住情况、照顾者支持、服务认知、参与意愿和资源可及性。",
+      "items": [
+        {
+          "item_id": "SA_001",
+          "item_name": "居住情况",
+          "max_score": 2,
+          "input_fields": [
+            "living.living_status",
+            "caregiver.caregiver_support_level"
+          ],
+          "rules": [
+            {
+              "score": 0,
+              "condition": {
+                "field": "living.living_status",
+                "operator": "in",
+                "value": [
+                  "with_family",
+                  "with_stable_support"
+                ]
+              },
+              "result_reason": "与家人同住或有稳定支持。",
+              "system_action": "记录支持网络。"
+            },
+            {
+              "score": 1,
+              "condition": {
+                "all": [
+                  {
+                    "field": "living.living_status",
+                    "operator": "==",
+                    "value": "alone"
+                  },
+                  {
+                    "field": "caregiver.caregiver_support_level",
+                    "operator": "in",
+                    "value": [
+                      "regular",
+                      "some_support"
+                    ]
+                  }
+                ]
+              },
+              "result_reason": "独居，但有邻里或家人定期联系。",
+              "system_action": "确认联系频率和紧急支援方式。"
+            },
+            {
+              "score": 2,
+              "condition": {
+                "all": [
+                  {
+                    "field": "living.living_status",
+                    "operator": "==",
+                    "value": "alone"
+                  },
+                  {
+                    "field": "caregiver.caregiver_support_level",
+                    "operator": "in",
+                    "value": [
+                      "none",
+                      "unstable"
+                    ]
+                  }
+                ]
+              },
+              "result_reason": "独居且缺少稳定照顾者。",
+              "system_action": "综合风险上调，并建议确认紧急联系人和社区支援。"
+            }
+          ],
+          "data_sources": [
+            "社工记录",
+            "访谈",
+            "过往服务记录"
+          ]
+        },
+        {
+          "item_id": "SA_002",
+          "item_name": "照顾者支持",
+          "max_score": 2,
+          "input_fields": [
+            "caregiver.has_caregiver",
+            "caregiver.caregiver_support_level",
+            "caregiver.caregiver_stress"
+          ],
+          "rules": [
+            {
+              "score": 0,
+              "condition": {
+                "all": [
+                  {
+                    "field": "caregiver.has_caregiver",
+                    "operator": "==",
+                    "value": true
+                  },
+                  {
+                    "field": "caregiver.caregiver_support_level",
+                    "operator": "==",
+                    "value": "stable"
+                  }
+                ]
+              },
+              "result_reason": "有照顾者协助复诊、服药和生活。",
+              "system_action": "记录照顾者联系方式和支持内容。"
+            },
+            {
+              "score": 1,
+              "condition": {
+                "any": [
+                  {
+                    "field": "caregiver.caregiver_support_level",
+                    "operator": "in",
+                    "value": [
+                      "some_support",
+                      "unstable"
+                    ]
+                  },
+                  {
+                    "field": "caregiver.caregiver_stress",
+                    "operator": "==",
+                    "value": "medium"
+                  }
+                ]
+              },
+              "result_reason": "有照顾者，但支持有限或压力中等。",
+              "system_action": "推荐照顾者支援或社区支援。"
+            },
+            {
+              "score": 2,
+              "condition": {
+                "any": [
+                  {
+                    "field": "caregiver.has_caregiver",
+                    "operator": "==",
+                    "value": false
+                  },
+                  {
+                    "field": "caregiver.caregiver_support_level",
+                    "operator": "==",
+                    "value": "none"
+                  },
+                  {
+                    "field": "caregiver.caregiver_stress",
+                    "operator": "==",
+                    "value": "high"
+                  }
+                ]
+              },
+              "result_reason": "无照顾者，或照顾者压力明显。",
+              "system_action": "推荐照顾者支援、社区支援或紧急支援资源。"
+            }
+          ],
+          "data_sources": [
+            "访谈",
+            "照顾者反馈",
+            "家访记录"
+          ]
+        },
+        {
+          "item_id": "SA_003",
+          "item_name": "服务认知",
+          "max_score": 2,
+          "input_fields": [
+            "service_access.knows_community_services",
+            "service_access.can_reach_service_point"
+          ],
+          "rules": [
+            {
+              "score": 0,
+              "condition": {
+                "field": "service_access.knows_community_services",
+                "operator": "==",
+                "value": true
+              },
+              "result_reason": "知道附近资源。",
+              "system_action": "可直接进入资源匹配。"
+            },
+            {
+              "score": 1,
+              "condition": {
+                "field": "service_access.knows_community_services",
+                "operator": "==",
+                "value": false
+              },
+              "result_reason": "不清楚附近有哪些服务。",
+              "system_action": "推荐资源并生成解释话术。"
+            },
+            {
+              "score": 2,
+              "condition": {
+                "all": [
+                  {
+                    "field": "service_access.knows_community_services",
+                    "operator": "==",
+                    "value": false
+                  },
+                  {
+                    "field": "service_access.can_reach_service_point",
+                    "operator": "==",
+                    "value": false
+                  }
+                ]
+              },
+              "result_reason": "完全不知道服务，且不知道如何申请或到达服务点。",
+              "system_action": "生成服务说明、申请步骤和社工解释话术。"
+            }
+          ],
+          "data_sources": [
+            "访谈",
+            "问卷"
+          ]
+        },
+        {
+          "item_id": "SA_004",
+          "item_name": "服务参与意愿",
+          "max_score": 2,
+          "input_fields": [
+            "service_access.willing_to_use_services",
+            "service_access.refuses_service",
+            "service_access.gave_up_due_to_distance_cost_transport"
+          ],
+          "rules": [
+            {
+              "score": 0,
+              "condition": {
+                "all": [
+                  {
+                    "field": "service_access.willing_to_use_services",
+                    "operator": "==",
+                    "value": true
+                  },
+                  {
+                    "field": "service_access.refuses_service",
+                    "operator": "==",
+                    "value": false
+                  }
+                ]
+              },
+              "result_reason": "愿意接受服务。",
+              "system_action": "进入资源推荐流程。"
+            },
+            {
+              "score": 1,
+              "condition": {
+                "any": [
+                  {
+                    "field": "service_access.willing_to_use_services",
+                    "operator": "==",
+                    "value": "hesitant"
+                  },
+                  {
+                    "field": "service_access.gave_up_due_to_distance_cost_transport",
+                    "operator": "==",
+                    "value": true
+                  }
+                ]
+              },
+              "result_reason": "对服务犹豫，需要解释，或曾因距离、交通、费用放弃。",
+              "system_action": "生成原因分析与替代资源。"
+            },
+            {
+              "score": 2,
+              "condition": {
+                "field": "service_access.refuses_service",
+                "operator": "==",
+                "value": true
+              },
+              "result_reason": "明显拒绝服务。",
+              "system_action": "记录拒绝原因，生成替代跟进建议。"
+            }
+          ],
+          "data_sources": [
+            "访谈",
+            "社工记录"
+          ]
+        },
+        {
+          "item_id": "SA_005",
+          "item_name": "资源可及性",
+          "max_score": 2,
+          "input_fields": [
+            "service_access.service_distance_level",
+            "service_access.needs_transport_support",
+            "service_access.can_reach_service_point",
+            "mobility.can_go_out_independently"
+          ],
+          "rules": [
+            {
+              "score": 0,
+              "condition": {
+                "all": [
+                  {
+                    "field": "service_access.service_distance_level",
+                    "operator": "in",
+                    "value": [
+                      "near",
+                      "suitable"
+                    ]
+                  },
+                  {
+                    "field": "service_access.can_reach_service_point",
+                    "operator": "==",
+                    "value": true
+                  }
+                ]
+              },
+              "result_reason": "服务点距离合适，交通可行。",
+              "system_action": "推荐附近线下服务。"
+            },
+            {
+              "score": 1,
+              "condition": {
+                "any": [
+                  {
+                    "field": "service_access.service_distance_level",
+                    "operator": "==",
+                    "value": "medium"
+                  },
+                  {
+                    "field": "service_access.needs_transport_support",
+                    "operator": "==",
+                    "value": true
+                  }
+                ]
+              },
+              "result_reason": "服务距离较远，或需要陪同/交通协助。",
+              "system_action": "优先推荐交通较方便或可预约协助的资源。"
+            },
+            {
+              "score": 2,
+              "condition": {
+                "any": [
+                  {
+                    "field": "service_access.service_distance_level",
+                    "operator": "==",
+                    "value": "far"
+                  },
+                  {
+                    "field": "service_access.can_reach_service_point",
+                    "operator": "==",
+                    "value": false
+                  },
+                  {
+                    "all": [
+                      {
+                        "field": "mobility.can_go_out_independently",
+                        "operator": "==",
+                        "value": false
+                      },
+                      {
+                        "field": "service_access.needs_transport_support",
+                        "operator": "==",
+                        "value": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              "result_reason": "服务距离远，长者行动不便，无法自行前往。",
+              "system_action": "优先推荐近距离、电话或上门服务。"
+            }
+          ],
+          "data_sources": [
+            "地址",
+            "地区资源库",
+            "行动能力",
+            "访谈记录"
+          ]
+        }
+      ]
+    }
+  ],
+  "red_flags": [
+    {
+      "red_flag_id": "RF_FALL_001",
+      "dimension_id": "FALL_MOBILITY",
+      "name": "多次跌倒",
+      "condition": {
+        "field": "fall.fall_count_12_months",
+        "operator": ">=",
+        "value": 2
+      },
+      "override_overall_risk": "高优先级",
+      "reason": "过去6–12个月多次跌倒。",
+      "system_action": "提示社工优先人工确认跌倒原因、是否受伤和是否需要专业评估。"
+    },
+    {
+      "red_flag_id": "RF_FALL_002",
+      "dimension_id": "FALL_MOBILITY",
+      "name": "跌倒后受伤或持续不适",
+      "condition": {
+        "any": [
+          {
+            "field": "fall.fall_injury",
+            "operator": "==",
+            "value": true
+          },
+          {
+            "field": "fall.post_fall_pain",
+            "operator": "==",
+            "value": true
+          },
+          {
+            "field": "fall.post_fall_dizziness",
+            "operator": "==",
+            "value": true
+          }
+        ]
+      },
+      "override_overall_risk": "高优先级",
+      "reason": "跌倒后存在受伤、疼痛或头晕等情况。",
+      "system_action": "建议社工尽快人工确认，并提醒咨询专业人员。"
+    },
+    {
+      "red_flag_id": "RF_FALL_003",
+      "dimension_id": "FALL_MOBILITY",
+      "name": "独居且行动不便",
+      "condition": {
+        "all": [
+          {
+            "field": "living.living_status",
+            "operator": "==",
+            "value": "alone"
+          },
+          {
+            "any": [
+              {
+                "field": "mobility.can_go_out_independently",
+                "operator": "==",
+                "value": false
+              },
+              {
+                "field": "mobility.mobility_level",
+                "operator": "in",
+                "value": [
+                  "needs_walking_aid",
+                  "wheelchair",
+                  "mostly_homebound"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "override_overall_risk": "高优先级",
+      "reason": "长者独居且行动不便，跌倒后可能无人及时发现。",
+      "system_action": "建议优先确认紧急联系人、跌倒后支援和家居安全。"
+    },
+    {
+      "red_flag_id": "RF_MED_001",
+      "dimension_id": "CHRONIC_MANAGEMENT",
+      "name": "用药混乱或自行停药",
+      "condition": {
+        "any": [
+          {
+            "field": "medication.medication_confusion",
+            "operator": "==",
+            "value": true
+          },
+          {
+            "field": "medication.self_stop_medication",
+            "operator": "==",
+            "value": true
+          },
+          {
+            "field": "medication.self_adjust_medication",
+            "operator": "==",
+            "value": true
+          }
+        ]
+      },
+      "override_overall_risk": "高优先级",
+      "reason": "存在用药混乱、自行停药或自行改药情况。",
+      "system_action": "标记需专业人员复核；系统不提供具体用药建议。"
+    },
+    {
+      "red_flag_id": "RF_SOCIAL_001",
+      "dimension_id": "SOCIAL_ACCESS",
+      "name": "独居且缺少稳定照顾者",
+      "condition": {
+        "all": [
+          {
+            "field": "living.living_status",
+            "operator": "==",
+            "value": "alone"
+          },
+          {
+            "field": "caregiver.caregiver_support_level",
+            "operator": "in",
+            "value": [
+              "none",
+              "unstable"
+            ]
+          },
+          {
+            "field": "living.has_emergency_contact",
+            "operator": "==",
+            "value": false
+          }
+        ]
+      },
+      "override_overall_risk": "高优先级",
+      "reason": "长者独居、缺少稳定照顾者，且紧急联系人不明确。",
+      "system_action": "建议优先确认紧急联系人、社区支援和应急方案。"
+    },
+    {
+      "red_flag_id": "RF_COG_001",
+      "dimension_id": "COGNITIVE_COMMUNICATION",
+      "name": "独居且记忆执行困难",
+      "condition": {
+        "all": [
+          {
+            "field": "living.living_status",
+            "operator": "==",
+            "value": "alone"
+          },
+          {
+            "field": "communication.memory_execution",
+            "operator": "==",
+            "value": "often_forget"
+          }
+        ]
+      },
+      "override_overall_risk": "高优先级",
+      "reason": "长者独居且经常忘记服药、复诊或服务安排。",
+      "system_action": "建议建立提醒机制，并尽快联系照顾者或社区支援。"
+    }
+  ],
+  "overall_risk_rules": [
+    {
+      "overall_risk": "高优先级",
+      "priority": 1,
+      "condition": {
+        "field": "red_flags.triggered_count",
+        "operator": ">=",
+        "value": 1
+      },
+      "reason": "存在至少一个红旗情况，需要优先人工确认。"
+    },
+    {
+      "overall_risk": "高风险",
+      "priority": 2,
+      "condition": {
+        "field": "dimension_summary.high_risk_count",
+        "operator": ">=",
+        "value": 2
+      },
+      "reason": "至少两个维度为高风险。"
+    },
+    {
+      "overall_risk": "中高风险",
+      "priority": 3,
+      "condition": {
+        "any": [
+          {
+            "field": "dimension_summary.high_risk_count",
+            "operator": "==",
+            "value": 1
+          },
+          {
+            "field": "dimension_summary.medium_risk_count",
+            "operator": ">=",
+            "value": 2
+          }
+        ]
+      },
+      "reason": "存在一个高风险维度，或至少两个中风险维度。"
+    },
+    {
+      "overall_risk": "低风险",
+      "priority": 4,
+      "condition": {
+        "field": "dimension_summary.low_risk_count",
+        "operator": ">=",
+        "value": 3
+      },
+      "reason": "大多数维度为低风险。"
+    },
+    {
+      "overall_risk": "中高风险",
+      "priority": 5,
+      "condition": {
+        "field": "dimension_summary.total_dimensions",
+        "operator": ">=",
+        "value": 1
+      },
+      "reason": "资料不足以判定为低风险，默认需要进一步跟进。"
+    }
+  ],
+  "output_schema": {
+    "elder_id": "string",
+    "overall_risk": "低风险 / 中高风险 / 高风险 / 高优先级",
+    "overall_reason": "string",
+    "red_flags": [
+      {
+        "red_flag_id": "string",
+        "name": "string",
+        "reason": "string",
+        "system_action": "string"
+      }
+    ],
+    "dimension_results": [
+      {
+        "dimension_id": "string",
+        "dimension_name": "string",
+        "raw_score": "number",
+        "max_score": "number",
+        "score_100": "number",
+        "risk_level": "低风险 / 中风险 / 高风险",
+        "item_results": [
+          {
+            "item_id": "string",
+            "item_name": "string",
+            "score": "0/1/2",
+            "reason": "string",
+            "system_action": "string",
+            "matched_rule_index": "number"
+          }
+        ]
+      }
+    ]
+  }
+}

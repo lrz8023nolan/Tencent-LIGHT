@@ -1,0 +1,22 @@
+# ============================================
+# 智能长者个案管理系统 - 本地 Docker 测试编排
+# 用法: docker compose up -d
+# ============================================
+services:
+  light-demo:
+    image: light-demo:latest
+    container_name: light-demo
+    ports:
+      - "3001:3001"
+    env_file:
+      - server/.env
+    volumes:
+      # 持久化数据库（容器重启不丢数据）
+      - light-db:/app/db
+      # 持久化上传文件
+      - light-uploads:/app/uploads
+    restart: unless-stopped
+
+volumes:
+  light-db:
+  light-uploads:

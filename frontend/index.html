@@ -1,0 +1,2058 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智能長者個案管理系統 - 社工工作台</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          primary: '#1677ff',
+          'primary-dark': '#0958d9',
+          'primary-light': '#e6f4ff',
+          danger: '#ff4d4f',
+          warning: '#fa8c16',
+          success: '#52c41a',
+          'bg-gray': '#f5f7fb',
+          'card-bg': '#ffffff',
+          'text-main': '#1d2129',
+          'text-secondary': '#86909c',
+        }
+      }
+    }
+  }
+</script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang TC', 'Microsoft JhengHei', sans-serif; background: #f5f7fb; color: #1d2129; }
+  
+  /* Sidebar */
+  .sidebar { width: 220px; min-height: 100vh; background: #fff; border-right: 1px solid #e5e7eb; position: fixed; left: 0; top: 0; bottom: 0; z-index: 100; display: flex; flex-direction: column; }
+  .sidebar-logo { padding: 20px 24px; border-bottom: 1px solid #f0f0f0; }
+  .sidebar-nav { flex: 1; padding: 12px 0; }
+  .sidebar-nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 24px; color: #4e5969; font-size: 15px; cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; text-decoration: none; }
+  .sidebar-nav-item:hover { background: #f5f7fb; color: #1677ff; }
+  .sidebar-nav-item.active { background: #e6f4ff; color: #1677ff; border-left-color: #1677ff; font-weight: 600; }
+  .sidebar-nav-item svg { width: 20px; height: 20px; flex-shrink: 0; }
+  
+  /* Main Content */
+  .main-content { margin-left: 220px; min-height: 100vh; }
+  
+  /* Topbar */
+  .topbar { height: 60px; background: #fff; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; padding: 0 32px; position: sticky; top: 0; z-index: 50; }
+  
+  /* Cards */
+  .stat-card { background: #fff; border-radius: 12px; padding: 24px; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .stat-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); transform: translateY(-2px); }
+  
+  /* Buttons */
+  .btn-primary { background: #1677ff; color: #fff; border: none; padding: 10px 24px; border-radius: 8px; font-size: 15px; cursor: pointer; transition: all 0.2s; }
+  .btn-primary:hover { background: #0958d9; }
+  .btn-primary:disabled { background: #c5cddb; cursor: not-allowed; }
+  .btn-outline { background: #fff; color: #1677ff; border: 1px solid #1677ff; padding: 10px 24px; border-radius: 8px; font-size: 15px; cursor: pointer; transition: all 0.2s; }
+  .btn-outline:hover { background: #e6f4ff; }
+  .btn-danger { background: #ff4d4f; color: #fff; border: none; padding: 10px 24px; border-radius: 8px; font-size: 15px; cursor: pointer; transition: all 0.2s; }
+  
+  /* Tags */
+  .risk-tag { display: inline-block; padding: 2px 10px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+  .risk-high { background: #fff1f0; color: #cf1322; border: 1px solid #ffa39e; }
+  .risk-medium { background: #fff7e6; color: #d46b08; border: 1px solid #ffd591; }
+  .risk-low { background: #f6ffed; color: #389e0d; border: 1px solid #b7eb8f; }
+  .risk-priority { background: #fff0f6; color: #c41d7f; border: 1px solid #ffadd2; }
+  .risk-pending { background: #e6f7ff; color: #096dd9; border: 1px solid #91d5ff; }
+  
+  .health-tag { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; background: #f0f5ff; color: #2f54eb; border: 1px solid #d6e4ff; cursor: pointer; }
+  .health-tag:hover { background: #d6e4ff; }
+  
+  /* Tables */
+  .data-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; }
+  .data-table th { background: #fafafa; padding: 14px 16px; text-align: left; font-size: 13px; color: #86909c; font-weight: 500; border-bottom: 1px solid #f0f0f0; }
+  .data-table td { padding: 14px 16px; font-size: 14px; border-bottom: 1px solid #f5f5f5; }
+  .data-table tr:hover td { background: #fafafa; }
+  
+  /* Modal */
+  .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+  .modal { background: #fff; border-radius: 16px; padding: 32px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+  
+  /* Pipeline steps */
+  .pipeline-step { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
+  .pipeline-dot { width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .pipeline-dot.pending { background: #f0f0f0; color: #bfbfbf; }
+  .pipeline-dot.processing { background: #e6f4ff; color: #1677ff; animation: pulse 1.5s infinite; }
+  .pipeline-dot.completed { background: #f6ffed; color: #52c41a; }
+  .pipeline-dot.failed { background: #fff1f0; color: #ff4d4f; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+  
+  /* Animations */
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-in { animation: fadeIn 0.3s ease; }
+  
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #d9d9d9; border-radius: 3px; }
+  
+  /* Form inputs */
+  input[type="text"], input[type="time"], input[type="date"], select, textarea {
+    padding: 10px 14px; border: 1px solid #d9d9d9; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: #1677ff; box-shadow: 0 0 0 2px rgba(22,119,255,0.1); }
+  
+  /* Tooltips */
+  .tooltip { position: relative; }
+  .tooltip::after { content: attr(data-tip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: #1d2129; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 12px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+  .tooltip:hover::after { opacity: 1; }
+  
+  /* Dropdown */
+  .dropdown { position: relative; display: inline-block; }
+  .dropdown-menu { position: absolute; right: 0; top: 100%; margin-top: 8px; background: #fff; border-radius: 8px; box-shadow: 0 6px 16px rgba(0,0,0,0.08); min-width: 160px; padding: 4px 0; z-index: 200; display: none; border: 1px solid #e5e7eb; }
+  .dropdown-menu.show { display: block; }
+  .dropdown-item { padding: 10px 16px; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+  .dropdown-item:hover { background: #f5f7fb; }
+  .dropdown-item.danger { color: #ff4d4f; }
+</style>
+</head>
+<body>
+
+<!-- Connection Banner -->
+<div id="connection-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#fff7e6;border-bottom:2px solid #fa8c16;color:#d46b08;justify-content:center;align-items:center;padding:10px 16px;font-size:14px;gap:8px;"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div style="font-size:18px;font-weight:700;color:#1677ff;">🏥 社工工作台</div>
+    <div style="font-size:12px;color:#86909c;margin-top:4px;">智能長者個案管理系統</div>
+  </div>
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item active" href="javascript:void(0)" data-route="/" onclick="navigateTo('/')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      首頁
+    </a>
+    <a class="sidebar-nav-item" href="javascript:void(0)" data-route="/archive" onclick="navigateTo('/archive')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      檔案庫
+    </a>
+    <a class="sidebar-nav-item" href="javascript:void(0)" data-route="/intake" onclick="navigateTo('/intake')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      智能錄入工作台
+    </a>
+  </nav>
+</aside>
+
+<!-- Main Content -->
+<div class="main-content">
+  <!-- Topbar -->
+  <header class="topbar" style="justify-content:space-between;">
+    <div style="flex:1;max-width:480px;">
+      <input type="text" id="globalSearch" placeholder="快速搜尋長者姓名 / 身份證號" 
+        oninput="handleGlobalSearch(this.value)" 
+        style="width:100%;padding:8px 16px;border-radius:20px;background:#f5f7fb;border:1px solid #e5e7eb;"
+        onkeydown="if(event.key==='Enter')handleSearchEnter()">
+      <div id="searchSuggestions" style="position:absolute;background:#fff;border-radius:8px;box-shadow:0 6px 16px rgba(0,0,0,0.08);max-width:480px;width:100%;display:none;z-index:300;"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div class="dropdown">
+        <button onclick="toggleNotifPanel()" style="background:none;border:none;cursor:pointer;position:relative;padding:8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4e5969" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span id="notifBadge" style="position:absolute;top:4px;right:4px;background:#ff4d4f;color:#fff;font-size:10px;width:16px;height:16px;border-radius:50%;display:none;align-items:center;justify-content:center;">0</span>
+        </button>
+        <div id="notifPanel" class="dropdown-menu" style="width:320px;right:0;max-height:400px;overflow-y:auto;">
+          <div style="padding:12px 16px;border-bottom:1px solid #f0f0f0;font-weight:600;font-size:14px;">通知</div>
+          <div style="padding:20px;text-align:center;color:#86909c;font-size:14px;">暫無新通知</div>
+        </div>
+      </div>
+      <div class="dropdown">
+        <button onclick="toggleUserMenu()" style="display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:8px;background:none;border:none;cursor:pointer;">
+          <div style="width:32px;height:32px;border-radius:50%;background:#1677ff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;">陳</div>
+          <span style="font-size:14px;color:#4e5969;">陳社工</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#86909c" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div id="userMenu" class="dropdown-menu">
+          <div class="dropdown-item danger" onclick="handleLogout()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            退出登入
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Page Views Container -->
+  <div id="app-container">
+    <!-- Pages are rendered dynamically -->
+  </div>
+</div>
+
+<!-- Global Toast -->
+<div id="toast" style="position:fixed;top:24px;right:24px;z-index:2000;display:none;padding:14px 24px;border-radius:8px;font-size:14px;box-shadow:0 6px 16px rgba(0,0,0,0.12);max-width:400px;"></div>
+
+<script>
+// ==================== API 配置 ====================
+// file:// 协议时回退到 localhost 开发服务器；线上同域部署时使用相对路径 /api
+const API_BASE = (window.location.protocol === 'file:') 
+  ? 'http://localhost:3001/api' 
+  : '/api';
+
+async function apiGet(path) {
+  const res = await fetch(`${API_BASE}${path}`);
+  return res.json();
+}
+
+async function apiPost(path, body) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  return res.json();
+}
+
+async function apiPatch(path, body) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  return res.json();
+}
+
+async function apiDelete(path) {
+  const res = await fetch(`${API_BASE}${path}`, { method: 'DELETE' });
+  return res.json();
+}
+
+// ==================== Connection Monitor ====================
+let serverOnline = false;
+let connectionRetries = 0;
+let connectionTimer = null;
+
+async function checkServerConnection() {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3000);
+    const res = await fetch(`${API_BASE}/health`, { signal: controller.signal });
+    clearTimeout(timeout);
+    const data = await res.json();
+    serverOnline = (data.status === 'ok');
+    return serverOnline;
+  } catch (e) {
+    serverOnline = false;
+    return false;
+  }
+}
+
+function showConnectionStatus(show) {
+  const el = document.getElementById('connection-banner');
+  if (!el) return;
+  if (show) {
+    el.style.display = 'flex';
+    el.innerHTML = `<span>🔄 正在連接伺服器... (第 ${connectionRetries} 次重試)</span>`;
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+function showOfflinePage() {
+  const container = document.getElementById('app-container');
+  container.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:center;min-height:60vh;flex-direction:column;gap:24px;text-align:center;padding:40px;">
+      <div style="font-size:64px;">🔌</div>
+      <h2 style="font-size:22px;color:#1d2129;">無法連接伺服器</h2>
+      <p style="color:#86909c;max-width:400px;line-height:1.8;">
+        後端服務未啟動或已中斷。<br>
+        請在專案目錄下雙擊 <code style="background:#f0f0f0;padding:2px 8px;border-radius:4px;">start.bat</code> 啟動後端服務。
+      </p>
+      <div style="display:flex;gap:12px;">
+        <button onclick="retryConnection()" style="padding:10px 24px;background:#1677ff;color:#fff;border:none;border-radius:8px;font-size:15px;cursor:pointer;">🔁 重新連接</button>
+      </div>
+      <p style="font-size:13px;color:#86909c;">自動重試中，無需操作...
+        <span id="retry-countdown" style="color:#1677ff;">5</span> 秒
+      </p>
+    </div>
+  `;
+  // Auto retry
+  let countdown = 5;
+  const timer = setInterval(() => {
+    countdown--;
+    const el = document.getElementById('retry-countdown');
+    if (el) el.textContent = countdown;
+    if (countdown <= 0) {
+      clearInterval(timer);
+      retryConnection();
+    }
+  }, 1000);
+}
+
+async function retryConnection() {
+  connectionRetries++;
+  showConnectionStatus(true);
+  const ok = await checkServerConnection();
+  if (ok) {
+    connectionRetries = 0;
+    showConnectionStatus(false);
+    currentRoute = getRouteFromHash();
+    updateSidebarActive();
+    renderPage();
+    return;
+  }
+  showConnectionStatus(false);
+  // Retry with backoff
+  const delay = Math.min(connectionRetries * 2000, 10000);
+  setTimeout(retryConnection, delay);
+}
+
+// Wrap API calls with connection check
+async function safeFetch(apiCall) {
+  try {
+    return await apiCall();
+  } catch (e) {
+    if (!serverOnline && connectionRetries === 0) {
+      // Trigger reconnection
+      await retryConnection();
+    }
+    throw e;
+  }
+}
+
+// ==================== Router (Hash-based for file:// compatibility) ====================
+let currentRoute = '/';
+
+function getRouteFromHash() {
+  const hash = window.location.hash;
+  if (!hash || hash === '#/' || hash === '#') return '/';
+  // Remove leading # and any trailing slash (except root)
+  const path = hash.startsWith('#') ? hash.slice(1) : hash;
+  return path || '/';
+}
+
+function navigateTo(path) {
+  console.log('[Router] navigateTo:', path);
+  window.location.hash = '#' + path;
+  currentRoute = path;
+  updateSidebarActive();
+  renderPage();
+  window.scrollTo(0, 0);
+}
+
+function updateSidebarActive() {
+  const basePath = currentRoute.split('?')[0];
+  document.querySelectorAll('.sidebar-nav-item').forEach(item => {
+    const route = item.getAttribute('data-route');
+    item.classList.toggle('active', basePath === route || (route !== '/' && basePath.startsWith(route + '/')));
+  });
+}
+
+// Handle hash changes (browser back/forward)
+window.addEventListener('hashchange', () => {
+  currentRoute = getRouteFromHash();
+  updateSidebarActive();
+  renderPage();
+  window.scrollTo(0, 0);
+});
+
+// ==================== Page Rendering ====================
+function parseRouteParams(route) {
+  const [path, queryStr] = route.split('?');
+  const params = {};
+  if (queryStr) {
+    queryStr.split('&').forEach(pair => {
+      const [k, v] = pair.split('=');
+      params[decodeURIComponent(k)] = decodeURIComponent(v || '');
+    });
+  }
+  return { path, params };
+}
+
+async function renderPage() {
+  const container = document.getElementById('app-container');
+  const { path, params } = parseRouteParams(currentRoute);
+  
+  // Store params globally so page init functions can access them
+  window._routeParams = params;
+  
+  if (path === '/') {
+    container.innerHTML = await renderDashboard();
+    await initDashboard();
+  } else if (path === '/archive' || path.startsWith('/archive?')) {
+    container.innerHTML = renderArchive();
+    await initArchive();
+  } else if (path === '/intake' || path.startsWith('/intake?')) {
+    container.innerHTML = renderIntake();
+    initIntake();
+  } else if (path.startsWith('/elder/')) {
+    const elderId = path.split('/elder/')[1];
+    container.innerHTML = renderElderDetail();
+    await initElderDetail(elderId);
+  } else if (path.startsWith('/report/')) {
+    const elderId = path.split('/report/')[1];
+    container.innerHTML = renderReport();
+    await initReport(elderId);
+  } else {
+    container.innerHTML = '<div style="padding:48px;text-align:center;color:#86909c;">頁面不存在</div>';
+  }
+}
+
+// ==================== Toast ====================
+function showToast(msg, type = 'info') {
+  const toast = document.getElementById('toast');
+  const colors = { success: '#f6ffed', error: '#fff1f0', info: '#e6f4ff', warning: '#fff7e6' };
+  const textColors = { success: '#389e0d', error: '#cf1322', info: '#096dd9', warning: '#d46b08' };
+  toast.style.display = 'block';
+  toast.style.background = colors[type] || colors.info;
+  toast.style.color = textColors[type] || textColors.info;
+  toast.textContent = msg;
+  setTimeout(() => { toast.style.display = 'none'; }, 3000);
+}
+
+// ==================== Global Search ====================
+async function handleGlobalSearch(query) {
+  const el = document.getElementById('searchSuggestions');
+  if (query.length < 1) { el.style.display = 'none'; return; }
+  
+  try {
+    const res = await apiGet(`/elders/search?q=${encodeURIComponent(query)}`);
+    if (res.success && res.data.length > 0) {
+      el.innerHTML = res.data.map(e => 
+        `<div onclick="navigateTo('/elder/${e.id}')" style="padding:10px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-weight:500;">${e.name}</span>
+          <span style="color:#86909c;font-size:12px;">${e.archive_no || ''}</span>
+        </div>`
+      ).join('');
+      el.style.display = 'block';
+    } else {
+      el.innerHTML = '<div style="padding:10px 16px;color:#86909c;">未找到相關長者</div>';
+      el.style.display = 'block';
+    }
+  } catch(e) {
+    el.style.display = 'none';
+  }
+}
+
+function handleSearchEnter() {
+  const q = document.getElementById('globalSearch').value.trim();
+  if (q) {
+    navigateTo(`/archive?q=${encodeURIComponent(q)}`);
+  }
+}
+
+// Close dropdowns on outside click
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.dropdown')) {
+    document.getElementById('userMenu').classList.remove('show');
+    document.getElementById('notifPanel').classList.remove('show');
+  }
+  if (!e.target.closest('#globalSearch') && !e.target.closest('#searchSuggestions')) {
+    document.getElementById('searchSuggestions').style.display = 'none';
+  }
+});
+
+function toggleUserMenu() { document.getElementById('userMenu').classList.toggle('show'); }
+function toggleNotifPanel() { document.getElementById('notifPanel').classList.toggle('show'); }
+function handleLogout() { showToast('已退出登入', 'info'); }
+
+// ==================== Risk Level Helpers ====================
+function riskClass(level) {
+  const map = { high: 'risk-high', medium: 'risk-medium', low: 'risk-low', pending: 'risk-pending' };
+  return map[level] || 'risk-pending';
+}
+function riskLabel(level) {
+  const map = { high: '高風險', medium: '中風險', low: '低風險', pending: '待評估' };
+  return map[level] || '待評估';
+}
+function statusLabel(s) { return s === 'verified' ? '已核對' : '待核對'; }
+
+// ==================== PAGE 1: Dashboard ====================
+function renderDashboard() {
+  const today = new Date();
+  const weekdays = ['日','一','二','三','四','五','六'];
+  const dateStr = `${today.getFullYear()}年${String(today.getMonth()+1).padStart(2,'0')}月${String(today.getDate()).padStart(2,'0')}日 星期${weekdays[today.getDay()]}`;
+  
+  return `
+    <div style="padding:32px;">
+      <div style="display:flex;gap:24px;">
+        <div style="flex:1;">
+          <!-- Greeting -->
+          <div style="margin-bottom:24px;">
+            <h2 style="font-size:24px;font-weight:700;margin-bottom:4px;">早晨，陳社工</h2>
+            <p style="color:#86909c;font-size:14px;" id="dashboardDate">${dateStr} | 數據截至今日早上 8:00</p>
+          </div>
+
+          <!-- Stats Cards -->
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;">
+            <div class="stat-card" onclick="navigateTo('/archive')">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                <div>
+                  <div style="font-size:13px;color:#86909c;margin-bottom:8px;">地區長者總數</div>
+                  <div style="font-size:32px;font-weight:700;" id="stat-total">-</div>
+                </div>
+                <div style="width:44px;height:44px;border-radius:12px;background:#e6f4ff;display:flex;align-items:center;justify-content:center;">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1677ff" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+              </div>
+            </div>
+            <div class="stat-card" onclick="navigateTo('/archive?risk=high')">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                <div>
+                  <div style="font-size:13px;color:#86909c;margin-bottom:8px;">高風險等級長者</div>
+                  <div style="font-size:32px;font-weight:700;color:#ff4d4f;" id="stat-high-risk">-</div>
+                </div>
+                <div style="width:44px;height:44px;border-radius:12px;background:#fff1f0;display:flex;align-items:center;justify-content:center;">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff4d4f" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </div>
+              </div>
+            </div>
+            <div class="stat-card" onclick="navigateTo('/intake?tab=pending')">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                <div>
+                  <div style="font-size:13px;color:#86909c;margin-bottom:8px;">待核對 AI 表單</div>
+                  <div style="font-size:32px;font-weight:700;color:#fa8c16;" id="stat-pending">-</div>
+                </div>
+                <div style="width:44px;height:44px;border-radius:12px;background:#fff7e6;display:flex;align-items:center;justify-content:center;">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fa8c16" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Emergency List -->
+          <div class="stat-card" style="margin-bottom:24px;">
+            <h3 style="font-size:18px;font-weight:600;margin-bottom:16px;">緊急介入清單</h3>
+            <div id="emergency-list" style="display:flex;flex-direction:column;gap:12px;">
+              <div style="padding:20px;text-align:center;color:#86909c;">載入中...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div style="width:280px;flex-shrink:0;">
+          <button class="btn-primary" style="width:100%;margin-bottom:16px;padding:16px;font-size:16px;font-weight:600;" onclick="navigateTo('/intake')">
+            + 新增個案
+          </button>
+          
+          <div class="stat-card" style="margin-bottom:16px;">
+            <h3 style="font-size:16px;font-weight:600;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
+              今日日程
+              <button onclick="openScheduleModal()" style="background:none;border:none;color:#1677ff;font-size:13px;cursor:pointer;">+ 添加</button>
+            </h3>
+            <div id="today-schedules" style="display:flex;flex-direction:column;gap:8px;">
+              <div style="padding:10px;text-align:center;color:#86909c;font-size:13px;">暫無日程</div>
+            </div>
+            <div id="schedule-batch-actions" style="margin-top:12px;display:none;">
+              <button class="btn-outline" style="width:100%;" onclick="toggleBatchScheduleMode()">批量操作</button>
+              <div id="schedule-batch-btns" style="display:none;margin-top:8px;gap:8px;">
+                <button class="btn-danger" onclick="batchCompleteSchedules()">標記為已完成</button>
+                <button class="btn-outline" onclick="toggleBatchScheduleMode()">取消</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function initDashboard() {
+  try {
+    // Load summary
+    const summary = await apiGet('/dashboard/summary');
+    if (summary.success) {
+      animateNumber('stat-total', summary.data.total_elders);
+      animateNumber('stat-high-risk', summary.data.high_risk_elders);
+      animateNumber('stat-pending', summary.data.pending_ai_review);
+      document.getElementById('dashboardDate').textContent = 
+        document.getElementById('dashboardDate').textContent.replace('數據截至', `數據截至 ${new Date(summary.data.data_updated_at).toLocaleString('zh-HK', {hour:'2-digit',minute:'2-digit'})}`);
+    }
+    
+    // Load emergency list
+    const emergency = await apiGet('/dashboard/emergency-list');
+    const el = document.getElementById('emergency-list');
+    if (emergency.success && emergency.data.length > 0) {
+      el.innerHTML = emergency.data.map(e => `
+        <div onclick="navigateTo('/elder/${e.id}')" style="display:flex;align-items:center;justify-content:space-between;padding:16px;background:#fafafa;border-radius:8px;cursor:pointer;transition:0.2s;" onmouseover="this.style.background='#f0f5ff'" onmouseout="this.style.background='#fafafa'">
+          <div style="display:flex;align-items:center;gap:16px;">
+            <div style="width:40px;height:40px;border-radius:50%;background:#1677ff;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;">${(e.name||'?')[0]}</div>
+            <div>
+              <div style="font-weight:600;font-size:15px;">${e.name} <span style="color:#86909c;font-weight:400;">${e.age || '?'}歲</span></div>
+              <div style="font-size:13px;color:#86909c;margin-top:2px;">${(e.summary_text || 'AI風險提示：需要關注').substring(0,60)}...</div>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <span class="risk-tag ${riskClass(e.risk_level)}">${riskLabel(e.risk_level)}</span>
+            <div style="font-size:12px;color:#86909c;margin-top:4px;">${e.assessment_date || ''}</div>
+          </div>
+        </div>
+      `).join('');
+    } else {
+      el.innerHTML = '<div style="padding:20px;text-align:center;color:#86909c;">暫無緊急介入個案</div>';
+    }
+    
+    // Load today's schedules
+    await loadSchedules();
+  } catch(e) {
+    console.error('Dashboard init error:', e);
+  }
+}
+
+function animateNumber(id, target) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  let current = 0;
+  const step = Math.max(1, Math.ceil(target / 30));
+  const timer = setInterval(() => {
+    current += step;
+    if (current >= target) { current = target; clearInterval(timer); }
+    el.textContent = current;
+  }, 30);
+}
+
+// ==================== Schedules ====================
+async function loadSchedules() {
+  const today = new Date().toISOString().split('T')[0];
+  try {
+    const res = await apiGet(`/schedules?date=${today}`);
+    const el = document.getElementById('today-schedules');
+    const batchEl = document.getElementById('schedule-batch-actions');
+    if (!el) return;
+    
+    if (res.success && res.data.length > 0) {
+      el.innerHTML = res.data.map((s, i) => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:${s.status==='completed'?'#f6ffed':'#fafafa'};border-radius:6px;${s.status==='completed'?'text-decoration:line-through;color:#86909c;':''}">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <input type="checkbox" class="schedule-checkbox" value="${s.id}" style="display:none;" onchange="updateBatchBtn()">
+            <span style="font-size:13px;font-weight:600;color:#1677ff;min-width:45px;">${s.time}</span>
+            <span style="font-size:13px;">${s.description}${s.elder_name ? ' - '+s.elder_name : ''}</span>
+          </div>
+          <span style="font-size:11px;">${s.status === 'completed' ? '✓' : '○'}</span>
+        </div>
+      `).join('');
+      if (batchEl) batchEl.style.display = 'block';
+    } else {
+      el.innerHTML = '<div style="padding:10px;text-align:center;color:#86909c;font-size:13px;">暫無日程</div>';
+      if (batchEl) batchEl.style.display = 'none';
+    }
+  } catch(e) {}
+}
+
+function openScheduleModal() {
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal">
+      <h3 style="font-size:18px;font-weight:600;margin-bottom:20px;">添加日程</h3>
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div>
+          <label style="font-size:14px;color:#86909c;display:block;margin-bottom:6px;">時間</label>
+          <input type="time" id="sched-time" style="width:100%;">
+        </div>
+        <div>
+          <label style="font-size:14px;color:#86909c;display:block;margin-bottom:6px;">長者姓名（可選）</label>
+          <input type="text" id="sched-elder" placeholder="輸入長者姓名搜索..." style="width:100%;" oninput="searchElderForSchedule(this.value)">
+          <div id="sched-elder-suggestions" style="max-height:120px;overflow-y:auto;"></div>
+        </div>
+        <div>
+          <label style="font-size:14px;color:#86909c;display:block;margin-bottom:6px;">日程描述</label>
+          <textarea id="sched-desc" rows="3" style="width:100%;" placeholder="輸入日程描述..."></textarea>
+        </div>
+        <div style="display:flex;gap:12px;justify-content:flex-end;">
+          <button class="btn-outline" onclick="this.closest('.modal-overlay').remove()">取消</button>
+          <button class="btn-primary" onclick="addSchedule()">確定</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+}
+
+async function searchElderForSchedule(query) {
+  const el = document.getElementById('sched-elder-suggestions');
+  if (!el || query.length < 1) { if(el) el.innerHTML = ''; return; }
+  try {
+    const res = await apiGet(`/elders/search?q=${encodeURIComponent(query)}`);
+    if (res.success && res.data.length > 0) {
+      el.innerHTML = res.data.map(e => `<div onclick="selectSchedElder('${e.id}','${e.name}')" style="padding:8px 12px;cursor:pointer;font-size:13px;">${e.name}</div>`).join('');
+    } else {
+      el.innerHTML = '<div style="padding:8px 12px;color:#86909c;font-size:13px;">未找到</div>';
+    }
+  } catch(e) {}
+}
+
+let schedElderId = '';
+function selectSchedElder(id, name) {
+  schedElderId = id;
+  document.getElementById('sched-elder').value = name;
+  document.getElementById('sched-elder-suggestions').innerHTML = '';
+}
+
+async function addSchedule() {
+  const time = document.getElementById('sched-time').value;
+  const elderName = document.getElementById('sched-elder').value;
+  const desc = document.getElementById('sched-desc').value;
+  
+  if (!time) { showToast('請選擇時間', 'warning'); return; }
+  
+  const today = new Date().toISOString().split('T')[0];
+  try {
+    await apiPost('/schedules', {
+      time, date: today, elderId: schedElderId, elderName, description: desc
+    });
+    document.querySelector('.modal-overlay')?.remove();
+    showToast('日程已添加', 'success');
+    await loadSchedules();
+  } catch(e) {
+    showToast('添加失敗', 'error');
+  }
+}
+
+let batchMode = false;
+function toggleBatchScheduleMode() {
+  batchMode = !batchMode;
+  document.getElementById('schedule-batch-btns').style.display = batchMode ? 'flex' : 'none';
+  document.querySelectorAll('.schedule-checkbox').forEach(cb => {
+    cb.style.display = batchMode ? 'inline' : 'none';
+    if (!batchMode) cb.checked = false;
+  });
+  updateBatchBtn();
+}
+
+function updateBatchBtn() {
+  const checked = document.querySelectorAll('.schedule-checkbox:checked').length;
+  const btn = document.querySelector('#schedule-batch-btns .btn-danger');
+  if (btn) btn.textContent = `標記為已完成 (${checked})`;
+}
+
+async function batchCompleteSchedules() {
+  const ids = [...document.querySelectorAll('.schedule-checkbox:checked')].map(cb => cb.value);
+  if (ids.length === 0) { showToast('請選擇日程', 'warning'); return; }
+  try {
+    await apiPatch('/schedules/batch-complete', { ids });
+    showToast(`已標記 ${ids.length} 條日程為已完成`, 'success');
+    batchMode = false;
+    toggleBatchScheduleMode();
+    await loadSchedules();
+  } catch(e) {
+    showToast('操作失敗', 'error');
+  }
+}
+
+// ==================== PAGE 2: Archive ====================
+function renderArchive() {
+  return `
+    <div style="padding:32px;">
+      <h2 style="font-size:22px;font-weight:700;margin-bottom:24px;">檔案庫</h2>
+      
+      <!-- Search -->
+      <div style="margin-bottom:16px;">
+        <input type="text" id="archive-search" placeholder="搜尋姓名、身份證號或電話號碼..." 
+          style="width:100%;max-width:480px;" onkeydown="if(event.key==='Enter')searchArchive()">
+        <button class="btn-primary" style="margin-left:8px;" onclick="searchArchive()">搜尋</button>
+      </div>
+      
+      <!-- Filters -->
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+        <select id="filter-risk" onchange="applyFilters()">
+          <option value="all">風險等級：全部</option>
+          <option value="high">高風險</option>
+          <option value="medium">中風險</option>
+          <option value="low">低風險</option>
+        </select>
+        <select id="filter-age" onchange="applyFilters()">
+          <option value="all">年齡段：全部</option>
+          <option value="60-69">60-69</option>
+          <option value="70-79">70-79</option>
+          <option value="80-89">80-89</option>
+          <option value="90+">90+</option>
+        </select>
+        <select id="filter-health" onchange="applyFilters()">
+          <option value="all">健康標籤：全部</option>
+          <option value="糖尿病">糖尿病</option>
+          <option value="高血壓">高血壓</option>
+          <option value="高血脂/血脂異常">高血脂/血脂異常</option>
+          <option value="冠心病/心梗/心絞痛">冠心病/心梗/心絞痛</option>
+          <option value="中風">中風</option>
+          <option value="慢性腎病">慢性腎病</option>
+          <option value="慢阻肺">慢阻肺</option>
+          <option value="哮喘">哮喘</option>
+          <option value="心力衰竭">心力衰竭</option>
+          <option value="房顫/心律失常">房顫/心律失常</option>
+          <option value="骨質疏鬆/骨折史">骨質疏鬆/骨折史</option>
+          <option value="失智症/認知障礙">失智症/認知障礙</option>
+          <option value="抑鬱/焦慮記錄">抑鬱/焦慮記錄</option>
+          <option value="癌症史">癌症史</option>
+          <option value="痛風/高尿酸">痛風/高尿酸</option>
+          <option value="慢性肝病">慢性肝病</option>
+        </select>
+        <button class="btn-outline" onclick="clearFilters()" style="font-size:13px;">清除篩選</button>
+        <div style="flex:1;"></div>
+        <button class="btn-outline" onclick="openFolderModal()">添加至</button>
+        <button class="btn-primary" onclick="exportExcel()">匯出 Excel</button>
+        <button class="btn-danger" id="batch-delete-btn" style="display:none;" onclick="batchDeleteElders()">批量刪除</button>
+      </div>
+
+      <!-- Table -->
+      <div style="overflow-x:auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:40px;"><input type="checkbox" id="select-all" onchange="toggleSelectAll()"></th>
+              <th>檔案編號</th>
+              <th>姓名</th>
+              <th>年齡</th>
+              <th>風險等級</th>
+              <th>健康標籤</th>
+              <th>評估日期</th>
+              <th>狀態</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="archive-tbody">
+            <tr><td colspan="9" style="text-align:center;padding:32px;color:#86909c;">載入中...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Secondary Folders -->
+      <div id="folders-section" style="margin-top:32px;"></div>
+    </div>
+  `;
+}
+
+let archiveData = [];
+
+async function initArchive() {
+  try {
+    // Check hash route params for initial filter
+    const params = window._routeParams || {};
+    if (params.risk) {
+      document.getElementById('filter-risk').value = params.risk;
+    }
+    if (params.q) {
+      document.getElementById('archive-search').value = params.q;
+    }
+    
+    await applyFilters();
+    await loadFolders();
+  } catch(e) {
+    console.error('Archive init error:', e);
+  }
+}
+
+async function searchArchive() {
+  await applyFilters();
+}
+
+async function applyFilters() {
+  const params = {};
+  const q = document.getElementById('archive-search')?.value;
+  if (q) params.query = q;
+  
+  const risk = document.getElementById('filter-risk')?.value;
+  if (risk && risk !== 'all') params.riskLevel = risk;
+  
+  const age = document.getElementById('filter-age')?.value;
+  if (age && age !== 'all') params.ageRange = age;
+  
+  const health = document.getElementById('filter-health')?.value;
+  if (health && health !== 'all') params.healthTag = health;
+
+  const queryStr = Object.entries(params).map(([k,v]) => `${k}=${encodeURIComponent(v)}`).join('&');
+  
+  try {
+    const res = await apiGet(`/elders?${queryStr}`);
+    if (res.success) {
+      archiveData = res.data;
+      renderArchiveTable(res.data);
+    }
+  } catch(e) {
+    showToast('載入失敗', 'error');
+  }
+}
+
+function renderArchiveTable(data) {
+  const tbody = document.getElementById('archive-tbody');
+  if (!data || data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:32px;color:#86909c;">暫無長者資料</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = data.map(e => {
+    const tags = Array.isArray(e.health_tags) ? e.health_tags : [];
+    return `
+      <tr>
+        <td><input type="checkbox" class="elder-checkbox" value="${e.id}" onchange="updateBatchDeleteBtn()"></td>
+        <td style="font-family:monospace;font-size:13px;">${e.archive_no || '-'}</td>
+        <td><a href="javascript:void(0)" onclick="navigateTo('/elder/${e.id}')" style="color:#1677ff;font-weight:500;">${e.name}</a></td>
+        <td>${e.age || '-'}</td>
+        <td><span class="risk-tag ${riskClass(e.risk_level)}">${riskLabel(e.risk_level)}</span></td>
+        <td><div style="display:flex;gap:4px;flex-wrap:wrap;">${tags.map(t => `<span class="health-tag">${t}</span>`).join('')}</div></td>
+        <td style="font-size:13px;">${e.assessment_date || '-'}</td>
+        <td><span style="color:${e.status==='verified'?'#52c41a':'#fa8c16'};font-size:13px;">${statusLabel(e.status)}</span></td>
+        <td>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span class="tooltip" data-tip="一頁通" onclick="navigateTo('/report/${e.id}')" style="cursor:pointer;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1677ff" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            </span>
+            <span class="tooltip" data-tip="補充新材料" onclick="navigateTo('/intake?elderId=${e.id}')" style="cursor:pointer;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1677ff" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            </span>
+            <span class="tooltip" data-tip="刪除" onclick="deleteElder('${e.id}','${e.name}')" style="cursor:pointer;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff4d4f" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </span>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function toggleSelectAll() {
+  const checked = document.getElementById('select-all').checked;
+  document.querySelectorAll('.elder-checkbox').forEach(cb => cb.checked = checked);
+  updateBatchDeleteBtn();
+}
+
+function updateBatchDeleteBtn() {
+  const count = getSelectedElderIds().length;
+  const btn = document.getElementById('batch-delete-btn');
+  if (btn) {
+    btn.style.display = count > 0 ? '' : 'none';
+    btn.textContent = `批量刪除 (${count})`;
+  }
+}
+
+async function batchDeleteElders() {
+  const ids = getSelectedElderIds();
+  if (ids.length === 0) { showToast('請先選擇需要刪除的長者', 'warning'); return; }
+  
+  if (!confirm(`⚠️ 確定要永久刪除已選中的 ${ids.length} 筆長者檔案嗎？\n\n此操作不可撤銷，相關的所有資料（慢病記錄、風險評估、建議、材料等）都會被刪除。`)) return;
+  if (!confirm(`再次確認：真的要刪除這 ${ids.length} 筆檔案嗎？此操作無法復原。`)) return;
+
+  try {
+    const res = await apiPost('/elders/batch-delete', { ids });
+    if (res.success) {
+      showToast(`已成功刪除 ${res.data.deleted} 筆檔案`, 'success');
+      document.getElementById('select-all').checked = false;
+      await applyFilters();
+      updateBatchDeleteBtn();
+    } else {
+      showToast('刪除失敗: ' + (res.error || '未知錯誤'), 'error');
+    }
+  } catch(e) {
+    showToast('批量刪除失敗: ' + e.message, 'error');
+  }
+}
+
+function clearFilters() {
+  document.getElementById('filter-risk').value = 'all';
+  document.getElementById('filter-age').value = 'all';
+  document.getElementById('filter-health').value = 'all';
+  document.getElementById('archive-search').value = '';
+  applyFilters();
+}
+
+function getSelectedElderIds() {
+  return [...document.querySelectorAll('.elder-checkbox:checked')].map(cb => cb.value);
+}
+
+async function exportExcel() {
+  const ids = getSelectedElderIds();
+  if (ids.length === 0) { showToast('請先選擇需要匯出的長者', 'warning'); return; }
+  
+  try {
+    const res = await apiPost('/export/excel', { elderIds: ids });
+    if (res.success && res.data.format === 'json') {
+      // Generate xlsx from JSON with SheetJS
+      const ws = XLSX.utils.aoa_to_sheet([res.data.columns, ...res.data.rows]);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, '長者檔案');
+      XLSX.writeFile(wb, `elder_export_${new Date().toISOString().split('T')[0]}.xlsx`);
+      showToast('匯出成功', 'success');
+    } else if (res instanceof Blob || res.data instanceof ArrayBuffer) {
+      // Handle direct xlsx response
+    } else {
+      showToast(JSON.stringify(res), 'error');
+    }
+  } catch(e) {
+    showToast('匯出失敗: ' + e.message, 'error');
+  }
+}
+
+// ==================== Folders ====================
+async function loadFolders() {
+  try {
+    const res = await apiGet('/folders');
+    const section = document.getElementById('folders-section');
+    if (!section) return;
+    if (res.success && res.data.length > 0) {
+      section.innerHTML = `
+        <h3 style="font-size:16px;font-weight:600;margin-bottom:12px;">我的分組 / 二級檔案庫</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          ${res.data.map(f => `<span class="health-tag" style="cursor:pointer;padding:8px 16px;font-size:14px;" onclick="loadFolderElders('${f.id}','${f.name}')">${f.name}</span>`).join('')}
+        </div>
+        <div id="folder-elders" style="margin-top:16px;"></div>
+      `;
+    } else {
+      section.innerHTML = '';
+    }
+  } catch(e) {}
+}
+
+function openFolderModal() {
+  const ids = getSelectedElderIds();
+  if (ids.length === 0) { showToast('請先選擇長者', 'warning'); return; }
+  
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal">
+      <h3 style="font-size:18px;font-weight:600;margin-bottom:20px;">添加至二級檔案庫</h3>
+      <div style="display:flex;gap:12px;margin-bottom:16px;">
+        <label><input type="radio" name="folder-type" value="new" checked onchange="toggleFolderType()"> 新建</label>
+        <label><input type="radio" name="folder-type" value="existing" onchange="toggleFolderType()"> 已有</label>
+      </div>
+      <div id="folder-new-input">
+        <input type="text" id="folder-name" placeholder="請輸入二級檔案庫名稱" style="width:100%;">
+      </div>
+      <div id="folder-existing-select" style="display:none;">
+        <select id="folder-select" style="width:100%;"></select>
+      </div>
+      <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:16px;">
+        <button class="btn-outline" onclick="this.closest('.modal-overlay').remove()">取消</button>
+        <button class="btn-primary" onclick="addToFolder('${ids.join(',')}')">確定</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+  
+  // Load existing folders
+  apiGet('/folders').then(res => {
+    if (res.success) {
+      const sel = document.getElementById('folder-select');
+      sel.innerHTML = res.data.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
+    }
+  });
+}
+
+function toggleFolderType() {
+  const type = document.querySelector('input[name="folder-type"]:checked').value;
+  document.getElementById('folder-new-input').style.display = type === 'new' ? 'block' : 'none';
+  document.getElementById('folder-existing-select').style.display = type === 'existing' ? 'block' : 'none';
+}
+
+async function addToFolder(elderIdsStr) {
+  const type = document.querySelector('input[name="folder-type"]:checked').value;
+  const elderIds = elderIdsStr.split(',');
+  
+  try {
+    if (type === 'new') {
+      const name = document.getElementById('folder-name').value;
+      if (!name) { showToast('請輸入檔案庫名稱', 'warning'); return; }
+      const folder = await apiPost('/folders', { name });
+      if (folder.success) {
+        await apiPost(`/folders/${folder.data.id}/add-elders`, { elderIds });
+      }
+    } else {
+      const folderId = document.getElementById('folder-select').value;
+      await apiPost(`/folders/${folderId}/add-elders`, { elderIds });
+    }
+    document.querySelector('.modal-overlay')?.remove();
+    showToast('已添加至二級檔案庫', 'success');
+    await loadFolders();
+  } catch(e) {
+    showToast('操作失敗', 'error');
+  }
+}
+
+async function loadFolderElders(folderId, folderName) {
+  try {
+    const res = await apiGet(`/folders/${folderId}/elders`);
+    const el = document.getElementById('folder-elders');
+    if (res.success) {
+      el.innerHTML = `
+        <h4 style="font-size:15px;font-weight:600;margin-bottom:8px;">${folderName} (${res.data.length})</h4>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          ${res.data.map(e => `<div style="padding:8px 12px;background:#fafafa;border-radius:6px;display:flex;justify-content:space-between;align-items:center;"> 
+            <div onclick="navigateTo('/elder/${e.id}')" style="cursor:pointer;flex:1;">
+              <span>${e.name} · ${e.age || '?'}歲</span> 
+              <span class="risk-tag ${riskClass(e.risk_level)}" style="margin-left:8px;">${riskLabel(e.risk_level)}</span>
+            </div>
+            <span class="tooltip" data-tip="移出分組" onclick="removeFromFolder('${folderId}','${e.id}','${e.name}')" style="cursor:pointer;color:#ff4d4f;font-size:18px;margin-left:8px;">×</span>
+          </div>`).join('')}
+        </div>
+      `;
+    }
+  } catch(e) {}
+}
+
+async function removeFromFolder(folderId, elderId, name) {
+  if (!confirm(`確定要將「${name}」移出此分組？`)) return;
+  try {
+    await apiDelete(`/folders/${folderId}/elders/${elderId}`);
+    showToast(`已從分組移除「${name}」`, 'success');
+    await loadFolders();
+  } catch(e) {
+    showToast('操作失敗', 'error');
+  }
+}
+
+async function deleteElder(id, name) {
+  if (!confirm(`⚠️ 確定要永久刪除「${name}」的檔案嗎？\n\n此操作將刪除所有關聯資料（慢病記錄、風險評估、材料等），且無法復原！`)) return;
+  if (!confirm(`再次確認：真的要刪除「${name}」嗎？`)) return;
+  
+  try {
+    const res = await apiDelete(`/elders/${id}`);
+    if (res.success) {
+      showToast(`已刪除「${name}」的檔案`, 'success');
+      await applyFilters();
+    } else {
+      showToast('刪除失敗: ' + (res.error || ''), 'error');
+    }
+  } catch(e) {
+    showToast('刪除失敗: ' + e.message, 'error');
+  }
+}
+
+// ==================== PAGE 3: Intake ====================
+function renderIntake() {
+  const params = window._routeParams || {};
+  const elderId = params.elderId;
+  const isSupplement = !!elderId;
+  
+  // Store elderId globally for startAnalysis to use
+  window._intakeElderId = elderId || null;
+  window._intakeElderName = '';
+  
+  return `
+    <div style="padding:32px;">
+      <h2 style="font-size:22px;font-weight:700;">智能錄入工作台</h2>
+      <p style="color:#86909c;margin-bottom:24px;">上傳長者資料，系統將通過 OCR / LLM 抽取關鍵信息，並進入社工核對流程。</p>
+      ${isSupplement ? `<div style="background:#e6f4ff;padding:12px 16px;border-radius:8px;margin-bottom:16px;color:#1677ff;display:flex;align-items:center;gap:8px;">
+        <span>📎 正在為長者<b id="supplement-elder-name">ID: ${elderId}</b>補充新材料</span>
+        <span style="font-size:12px;color:#86909c;">（新資料將合併至現有檔案，不會創建新檔案）</span>
+      </div>` : ''}
+      
+      <div style="display:flex;gap:24px;">
+        <!-- Upload Area -->
+        <div style="flex:1;">
+          <div id="upload-zone" style="border:2px dashed #d9d9d9;border-radius:12px;padding:48px;text-align:center;cursor:pointer;transition:0.2s;background:#fafafa;"
+            onclick="document.getElementById('file-input').click()"
+            ondragover="event.preventDefault();this.style.borderColor='#1677ff';this.style.background='#e6f4ff';"
+            ondragleave="this.style.borderColor='#d9d9d9';this.style.background='#fafafa';"
+            ondrop="handleFileDrop(event)">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#86909c" stroke-width="1.5" style="margin:0 auto 12px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <p style="font-size:16px;color:#4e5969;margin-bottom:4px;">拖放文件到此處，或點擊上傳</p>
+            <p style="font-size:13px;color:#86909c;">支援格式：PDF、JPG、PNG（單個文件不超過 20MB）</p>
+            <input type="file" id="file-input" multiple accept=".pdf,.jpg,.jpeg,.png" style="display:none;" onchange="handleFileSelect(event)">
+          </div>
+          
+          <div id="file-list" style="margin-top:16px;display:flex;flex-direction:column;gap:8px;"></div>
+          
+          <div style="display:flex;gap:12px;margin-top:16px;">
+            <button class="btn-primary" id="start-analysis-btn" disabled style="flex:1;padding:14px;font-size:16px;" onclick="startAnalysis()">
+              開始識別
+            </button>
+            <button class="btn-outline" id="voice-record-btn" style="padding:14px 24px;font-size:16px;display:flex;align-items:center;gap:8px;" onclick="toggleVoiceRecording()">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+              🎤 語音錄入
+            </button>
+          </div>
+          <div id="voice-status" style="margin-top:8px;display:none;padding:10px 16px;background:#f0f5ff;border-radius:8px;font-size:14px;color:#1677ff;"></div>
+        </div>
+        
+        <!-- Pipeline -->
+        <div style="flex:1;">
+          <div class="stat-card">
+            <h3 style="font-size:16px;font-weight:600;margin-bottom:16px;">資料處理流程</h3>
+            <div id="pipeline-steps">
+              ${['檔案上傳完成','OCR / 文檔文本提取中','LLM 結構化識別中','生成 extracted_data 中','慢病標籤規則匹配中','五維度風險評分中','綜合風險判斷中','社工核對表單生成中','已加入檔案庫 / 待核對 AI 表單'].map((name, i) => `
+                <div class="pipeline-step">
+                  <div class="pipeline-dot ${i===0?'completed':'pending'}" id="pipeline-dot-${i}">${i===0?'✓':(i+1)}</div>
+                  <span style="font-size:14px;color:${i===0?'#52c41a':'#86909c'};" id="pipeline-text-${i}">${name}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- Result Summary -->
+          <div id="analysis-result" style="margin-top:16px;display:none;" class="fade-in">
+            <div class="stat-card">
+              <h3 style="font-size:16px;font-weight:600;margin-bottom:12px;">識別結果</h3>
+              <div id="result-content"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+let uploadedFiles = [];
+
+function initIntake() {
+  uploadedFiles = [];
+  document.getElementById('file-list').innerHTML = '';
+  document.getElementById('start-analysis-btn').disabled = true;
+  document.getElementById('analysis-result').style.display = 'none';
+  
+  // For supplement mode, fetch elder name
+  if (window._intakeElderId) {
+    apiGet(`/elders/${window._intakeElderId}`).then(res => {
+      if (res.success) {
+        window._intakeElderName = res.data.name;
+        const nameEl = document.getElementById('supplement-elder-name');
+        if (nameEl) nameEl.textContent = res.data.name + ' (' + (res.data.archive_no || '') + ')';
+      }
+    }).catch(() => {});
+  }
+}
+
+function handleFileSelect(event) {
+  addFiles(event.target.files);
+}
+
+function handleFileDrop(event) {
+  event.preventDefault();
+  document.getElementById('upload-zone').style.borderColor = '#d9d9d9';
+  document.getElementById('upload-zone').style.background = '#fafafa';
+  addFiles(event.dataTransfer.files);
+}
+
+function addFiles(fileList) {
+  for (const file of fileList) {
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (!['pdf','jpg','jpeg','png'].includes(ext)) {
+      showToast(`不支援的格式：${file.name}`, 'error');
+      continue;
+    }
+    if (file.size > 20 * 1024 * 1024) {
+      showToast(`文件超過 20MB：${file.name}`, 'error');
+      continue;
+    }
+    uploadedFiles.push(file);
+  }
+  renderFileList();
+}
+
+function renderFileList() {
+  const el = document.getElementById('file-list');
+  el.innerHTML = uploadedFiles.map((f, i) => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fafafa;border-radius:8px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:18px;">📄</span>
+        <div>
+          <div style="font-size:14px;font-weight:500;">${f.name}</div>
+          <div style="font-size:12px;color:#86909c;">${(f.size/1024).toFixed(1)} KB</div>
+        </div>
+      </div>
+      <button onclick="removeFile(${i})" style="background:none;border:none;color:#ff4d4f;cursor:pointer;font-size:18px;">×</button>
+    </div>
+  `).join('');
+  document.getElementById('start-analysis-btn').disabled = uploadedFiles.length === 0;
+}
+
+function removeFile(i) {
+  uploadedFiles.splice(i, 1);
+  renderFileList();
+}
+
+async function startAnalysis() {
+  if (uploadedFiles.length === 0) return;
+  
+  const elderId = window._intakeElderId || null;
+  const elderName = window._intakeElderName || '';
+  
+  document.getElementById('start-analysis-btn').disabled = true;
+  document.getElementById('start-analysis-btn').textContent = '處理中...';
+  
+  try {
+    // Upload files
+    const formData = new FormData();
+    for (const file of uploadedFiles) {
+      formData.append('files', file);
+    }
+    
+    const uploadRes = await fetch(`${API_BASE}/intake/upload`, { method: 'POST', body: formData });
+    const uploadData = await uploadRes.json();
+    
+    if (!uploadData.success) { throw new Error(uploadData.error); }
+    
+    updatePipelineStep(0, 'completed');
+    updatePipelineStep(1, 'processing');
+    
+    // Start analysis
+    const analyzeRes = await apiPost('/intake/analyze', {
+      files: uploadData.data.files,
+      elderId: elderId
+    });
+    
+    if (!analyzeRes.success) { throw new Error(analyzeRes.error); }
+    
+    // Poll status
+    const jobId = analyzeRes.data.jobId;
+    await pollJobStatus(jobId);
+    
+  } catch(e) {
+    showToast('識別失敗: ' + e.message, 'error');
+    document.getElementById('start-analysis-btn').disabled = false;
+    document.getElementById('start-analysis-btn').textContent = '開始識別';
+  }
+}
+
+async function pollJobStatus(jobId) {
+  return new Promise((resolve, reject) => {
+    const interval = setInterval(async () => {
+      try {
+        const res = await apiGet(`/intake/status/${jobId}`);
+        if (!res.success) return;
+        
+        const { progress, status, elderId } = res.data;
+        
+        // Update pipeline UI
+        if (progress && Array.isArray(progress)) {
+          progress.forEach((step, i) => {
+            if (i < 9) updatePipelineStep(i, step.status);
+          });
+        }
+        
+        if (status === 'completed') {
+          clearInterval(interval);
+          document.getElementById('start-analysis-btn').textContent = '識別完成 ✓';
+          document.getElementById('analysis-result').style.display = 'block';
+          document.getElementById('result-content').innerHTML = `
+            <div style="color:#52c41a;font-weight:600;margin-bottom:8px;">✅ 識別完成</div>
+            <p style="font-size:14px;">長者檔案已新增至檔案庫，狀態為「待核對」。</p>
+            <a href="#" onclick="navigateTo('/elder/${elderId}');return false;" style="color:#1677ff;text-decoration:underline;display:block;margin-top:8px;">查看長者詳情 →</a>
+          `;
+          showToast('識別完成，已加入檔案庫', 'success');
+          resolve();
+        } else if (status === 'failed') {
+          clearInterval(interval);
+          document.getElementById('start-analysis-btn').disabled = false;
+          document.getElementById('start-analysis-btn').textContent = '開始識別';
+          reject(new Error(res.data.error || '處理失敗'));
+        }
+      } catch(e) {
+        // ignore polling errors
+      }
+    }, 1000);
+    
+    // Timeout after 5 minutes
+    setTimeout(() => {
+      clearInterval(interval);
+      reject(new Error('處理超時'));
+    }, 300000);
+  });
+}
+
+function updatePipelineStep(index, status) {
+  const dot = document.getElementById(`pipeline-dot-${index}`);
+  const text = document.getElementById(`pipeline-text-${index}`);
+  if (!dot || !text) return;
+  
+  dot.className = 'pipeline-dot ' + status;
+  text.style.color = status === 'completed' ? '#52c41a' : status === 'processing' ? '#1677ff' : status === 'failed' ? '#ff4d4f' : '#86909c';
+  
+  if (status === 'completed') dot.innerHTML = '✓';
+  else if (status === 'failed') dot.innerHTML = '✗';
+}
+
+// ==================== Voice Input (Web Speech API) ====================
+let recognition = null;
+let isRecognizing = false;
+let voiceTextBuffer = '';
+let voiceErrorCount = 0;
+let voiceSilenceTimer = null;
+
+function toggleVoiceRecording() {
+  const btn = document.getElementById('voice-record-btn');
+  const status = document.getElementById('voice-status');
+  
+  if (isRecognizing) {
+    stopVoiceRecognition();
+    return;
+  }
+  
+  startVoiceRecognition();
+}
+
+function startVoiceRecognition() {
+  const btn = document.getElementById('voice-record-btn');
+  const status = document.getElementById('voice-status');
+  
+  // Check for Web Speech API support
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    const text = prompt('瀏覽器不支援語音識別。請直接輸入文字內容（如：姓名王婆婆，今年72歲，血壓偏高...）：');
+    if (text && text.trim()) {
+      processVoiceText(text.trim());
+    }
+    return;
+  }
+  
+  recognition = new SpeechRecognition();
+  // Try zh-HK first (broader browser support than yue-Hant-HK)
+  recognition.lang = 'zh-HK';
+  recognition.interimResults = true;
+  recognition.continuous = true;
+  recognition.maxAlternatives = 1;
+  voiceTextBuffer = '';
+  voiceErrorCount = 0;
+  
+  recognition.onresult = (event) => {
+    // Clear silence timer since we got speech
+    if (voiceSilenceTimer) { clearTimeout(voiceSilenceTimer); voiceSilenceTimer = null; }
+    
+    let interim = '';
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      if (event.results[i].isFinal) {
+        voiceTextBuffer += event.results[i][0].transcript;
+      } else {
+        interim += event.results[i][0].transcript;
+      }
+    }
+    const display = voiceTextBuffer + (interim ? ' [' + interim + ']' : '');
+    status.textContent = '🔴 錄音中: ' + (display || '（請說話...）');
+    
+    // Auto-stop after 3 seconds of silence
+    if (voiceSilenceTimer) clearTimeout(voiceSilenceTimer);
+    voiceSilenceTimer = setTimeout(() => {
+      if (voiceTextBuffer.trim()) {
+        status.textContent = '✅ 檢測到語音停頓，正在處理...';
+        stopVoiceRecognition();
+      }
+    }, 3000);
+  };
+  
+  recognition.onerror = (event) => {
+    console.warn('[Voice] Recognition error:', event.error);
+    voiceErrorCount++;
+    
+    if (event.error === 'not-allowed') {
+      status.textContent = '⚠️ 請允許麥克風權限後再試';
+      stopVoiceRecognition();
+      return;
+    }
+    
+    if (event.error === 'no-speech') {
+      status.textContent = '⚠️ 未檢測到語音，請再試一次或使用文字輸入';
+      stopVoiceRecognition();
+      if (voiceTextBuffer.trim()) {
+        processVoiceText(voiceTextBuffer.trim());
+      }
+      return;
+    }
+    
+    // For other errors like 'network' or 'aborted', try to recover
+    if (voiceErrorCount < 3 && event.error !== 'aborted') {
+      status.textContent = '🔴 重新連接中... 請繼續說話';
+      try { recognition.start(); } catch(e) {}
+    } else {
+      status.textContent = '語音識別不可用，請改用文字輸入';
+      stopVoiceRecognition();
+      if (voiceTextBuffer.trim()) {
+        processVoiceText(voiceTextBuffer.trim());
+      }
+    }
+  };
+  
+  recognition.onend = () => {
+    if (voiceSilenceTimer) { clearTimeout(voiceSilenceTimer); voiceSilenceTimer = null; }
+    if (voiceTextBuffer.trim()) {
+      processVoiceText(voiceTextBuffer.trim());
+    }
+    isRecognizing = false;
+    btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> 🎤 語音錄入`;
+    btn.classList.remove('btn-danger');
+    btn.classList.add('btn-outline');
+  };
+  
+  try {
+    recognition.start();
+  } catch(e) {
+    status.textContent = '語音啟動失敗，請改用文字輸入';
+    status.style.display = 'block';
+    isRecognizing = false;
+    return;
+  }
+  
+  isRecognizing = true;
+  btn.innerHTML = `⏹ 停止錄音`;
+  btn.classList.remove('btn-outline');
+  btn.classList.add('btn-danger');
+  status.style.display = 'block';
+  status.textContent = '🔴 錄音中... 請用粵語或普通話說出長者信息（說完後稍停即自動處理）';
+  
+  // Auto-stop after 20 seconds if no speech received
+  voiceSilenceTimer = setTimeout(() => {
+    status.textContent = '⏱ 錄音超時，如未識別到語音請改用文字輸入';
+    stopVoiceRecognition();
+  }, 20000);
+}
+
+function stopVoiceRecognition() {
+  if (voiceSilenceTimer) { clearTimeout(voiceSilenceTimer); voiceSilenceTimer = null; }
+  if (recognition) {
+    try { recognition.stop(); } catch(e) {}
+    recognition = null;
+  }
+  isRecognizing = false;
+}
+
+// 发送文字到后端处理
+async function processVoiceText(text) {
+  const status = document.getElementById('voice-status');
+  status.style.display = 'block';
+  status.textContent = '正在 AI 分析...';
+  
+  try {
+    const res = await apiPost('/intake/voice', { audioText: text, elderId: window._intakeElderId || null });
+    if (res.success) {
+      handleVoiceResult(res.data);
+    } else {
+      status.textContent = '分析失敗: ' + (res.error || '未知錯誤');
+    }
+  } catch(e) {
+    status.textContent = '分析失敗: ' + e.message;
+  }
+}
+
+function handleVoiceResult(data) {
+  const status = document.getElementById('voice-status');
+  const resultEl = document.getElementById('analysis-result');
+  const content = document.getElementById('result-content');
+  
+  status.style.display = 'none';
+  resultEl.style.display = 'block';
+  
+  const tags = data.summary?.health_tags || [];
+  const judgment = data.summary?.judgment || {};
+  
+  content.innerHTML = `
+    <div style="color:#52c41a;font-weight:600;margin-bottom:8px;">✅ 語音錄入完成</div>
+    <div style="margin-bottom:8px;font-size:14px;">長者：<strong>${data.summary?.name || '未識別'}</strong></div>
+    ${tags.length > 0 ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;">${tags.map(t=>`<span class="health-tag">${t}</span>`).join('')}</div>` : '<div style="color:#86909c;margin-bottom:8px;">暫無慢病標籤</div>'}
+    <div style="font-size:14px;">風險等級：<span class="risk-tag ${riskClass(data.summary?.risk_level)}">${riskLabel(data.summary?.risk_level)}</span></div>
+    ${judgment.suspected_conditions?.length > 0 ? `<div style="font-size:13px;color:#fa8c16;margin-top:8px;">⚠️ 懷疑：${judgment.suspected_conditions.join('、')}</div>` : ''}
+    ${data.elderId ? `<a href="javascript:void(0)" onclick="navigateTo('/elder/${data.elderId}')" style="color:#1677ff;text-decoration:underline;display:block;margin-top:8px;">查看長者詳情 →</a>` : ''}
+  `;
+  
+  showToast('語音錄入完成', 'success');
+  setTimeout(() => applyFilters ? applyFilters() : null, 1000);
+}
+
+// ==================== PAGE 4: Elder Detail ====================
+function renderElderDetail() {
+  return `
+    <div style="padding:32px;" id="elder-detail-container">
+      <div style="text-align:center;padding:48px;color:#86909c;">載入中...</div>
+    </div>
+  `;
+}
+
+async function initElderDetail(elderId) {
+  try {
+    const res = await apiGet(`/elders/${elderId}`);
+    if (!res.success) {
+      document.getElementById('elder-detail-container').innerHTML = '<div style="text-align:center;padding:48px;color:#ff4d4f;">長者檔案不存在</div>';
+      return;
+    }
+    
+    const e = res.data;
+    const diseases = e.chronic_diseases || [];
+    const dimensions = e.risk_dimensions || [];
+    const recs = e.recommendations || [];
+    const resources = e.resources || [];
+    
+    document.getElementById('elder-detail-container').innerHTML = `
+      <div style="margin-bottom:24px;">
+        <a href="#" onclick="history.back();return false;" style="color:#86909c;font-size:14px;text-decoration:none;">← 返回</a>
+      </div>
+      
+      <!-- Basic Info -->
+      <div style="display:flex;gap:24px;margin-bottom:24px;">
+        <div class="stat-card" style="flex:1;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+            <div>
+              <h2 style="font-size:22px;font-weight:700;margin-bottom:8px;">${e.name} <span style="font-size:16px;color:#86909c;font-weight:400;">${e.gender || ''} · ${e.age || '?'}歲</span></h2>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;font-size:14px;">
+                <div><span style="color:#86909c;">檔案編號：</span>${e.archive_no || '-'}</div>
+                <div><span style="color:#86909c;">負責社工：</span>${e.responsible_worker || '-'}</div>
+                <div><span style="color:#86909c;">地址：</span>${e.address || '-'}</div>
+                <div><span style="color:#86909c;">電話：</span>${e.phone || '-'}</div>
+                <div><span style="color:#86909c;">緊急聯絡人：</span>${e.emergency_contact_name || '-'}${e.emergency_contact_relation ? ` (${e.emergency_contact_relation})` : ''}</div>
+                <div><span style="color:#86909c;">聯絡電話：</span>${e.emergency_contact_phone || '-'}</div>
+                <div><span style="color:#86909c;">最近評估日期：</span>${e.assessment_date || '-'}</div>
+                <div><span style="color:#86909c;">狀態：</span><span style="color:${e.status==='verified'?'#52c41a':'#fa8c16'};">${statusLabel(e.status)}</span></div>
+              </div>
+            </div>
+            <span class="risk-tag ${riskClass(e.risk_level)}" style="font-size:14px;padding:6px 16px;">${riskLabel(e.risk_level)}</span>
+          </div>
+        </div>
+        
+        <!-- Health Tags -->
+        <div class="stat-card" style="width:300px;">
+          <h3 style="font-size:15px;font-weight:600;margin-bottom:12px;">慢病標籤</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            ${diseases.filter(d => d.counted_as_chronic || d.status === 'confirmed').map(d => `
+              <span class="health-tag" onclick="showDiseaseDetail('${d.id}')" style="cursor:pointer;">${d.disease_name}</span>
+            `).join('')}
+            ${diseases.filter(d => d.counted_as_chronic || d.status === 'confirmed').length === 0 ? '<span style="color:#86909c;">暫無已確認慢病</span>' : ''}
+          </div>
+        </div>
+      </div>
+      
+      <!-- Radar Chart -->
+      <div style="display:flex;gap:24px;margin-bottom:24px;">
+        <div class="stat-card" style="flex:1;max-width:400px;">
+          <h3 style="font-size:16px;font-weight:600;margin-bottom:16px;">五維度風險評估</h3>
+          <canvas id="radarChart" width="350" height="350"></canvas>
+          <div style="display:flex;justify-content:center;gap:16px;margin-top:16px;flex-wrap:wrap;">
+            ${dimensions.map(d => `
+              <div style="text-align:center;">
+                <div style="font-size:12px;color:#86909c;">${d.dimension_name}</div>
+                <span class="risk-tag ${riskClass(d.risk_level)}">${riskLabel(d.risk_level)}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        
+        <!-- Dimension Details -->
+        <div class="stat-card" style="flex:1;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <h3 style="font-size:16px;font-weight:600;">風險維度摘要</h3>
+            <button class="btn-outline" style="padding:6px 16px;font-size:13px;" onclick="showRiskDimensionDetail()">詳細評分表</button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr><th>維度</th><th>風險等級</th><th>關鍵原因</th><th>待確認資料</th></tr>
+              </thead>
+              <tbody>
+                ${dimensions.map(d => `
+                  <tr>
+                    <td style="font-weight:500;">${d.dimension_name}</td>
+                    <td><span class="risk-tag ${riskClass(d.risk_level)}">${riskLabel(d.risk_level)}</span></td>
+                    <td style="font-size:13px;">${(Array.isArray(d.key_reasons) ? d.key_reasons.join('；') : d.key_reasons) || '-'}</td>
+                    <td style="font-size:13px;color:#fa8c16;">${(Array.isArray(d.missing_information) ? d.missing_information.join('；') : d.missing_information) || '-'}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Recommendations -->
+      <div class="stat-card" style="margin-bottom:24px;">
+        <h3 style="font-size:16px;font-weight:600;margin-bottom:16px;">簡要行動建議</h3>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          ${recs.map(r => `
+            <div style="padding:12px 16px;background:#fafafa;border-radius:8px;border-left:3px solid #1677ff;">
+              <div style="font-size:13px;color:#86909c;margin-bottom:4px;">${r.dimension || '跟進建議'}</div>
+              <div style="font-size:14px;">${r.content}</div>
+            </div>
+          `).join('')}
+          ${recs.length === 0 ? '<div style="color:#86909c;">暫無建議</div>' : ''}
+        </div>
+      </div>
+      
+      <!-- Resources -->
+      ${resources.length > 0 ? `
+      <div class="stat-card" style="margin-bottom:24px;">
+        <h3 style="font-size:16px;font-weight:600;margin-bottom:16px;">推薦社區資源</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;">
+          ${resources.slice(0, 6).map(r => `
+            <div style="padding:14px;background:#fafafa;border-radius:8px;">
+              <div style="font-weight:600;font-size:14px;margin-bottom:4px;">${r.resource_name_zh}</div>
+              <div style="font-size:12px;color:#86909c;margin-bottom:4px;">${r.resource_type} · ${r.district}</div>
+              <div style="font-size:12px;">${r.address_zh || ''}</div>
+              <div style="font-size:12px;color:#1677ff;">${r.contact || ''}</div>
+              ${r.matched_reason ? `<div style="font-size:11px;color:#52c41a;margin-top:4px;">匹配原因：${r.matched_reason}</div>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      ` : ''}
+      
+      <!-- Materials History -->
+      ${e.materials && e.materials.length > 0 ? `
+      <div class="stat-card">
+        <h3 style="font-size:16px;font-weight:600;margin-bottom:16px;">上傳材料記錄</h3>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          ${e.materials.map(m => `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fafafa;border-radius:8px;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span>📄</span>
+                <span style="font-size:14px;">${m.file_name}</span>
+              </div>
+              <span style="font-size:12px;color:#86909c;">${m.upload_date || ''}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      ` : ''}
+    `;
+    
+    // Init radar chart
+    initRadarChart(dimensions);
+    
+    // Init disease detail modals
+    window._elderDiseases = diseases;
+    window._elderDimensions = dimensions;
+    window._elderName = e.name;
+    
+  } catch(e) {
+    document.getElementById('elder-detail-container').innerHTML = '<div style="text-align:center;padding:48px;color:#ff4d4f;">載入失敗</div>';
+  }
+}
+
+function initRadarChart(dimensions) {
+  setTimeout(() => {
+    const canvas = document.getElementById('radarChart');
+    if (!canvas) return;
+    
+    const labels = dimensions.map(d => d.dimension_name);
+    const scoreMap = { high: 1, medium: 2, low: 3 };
+    const data = dimensions.map(d => scoreMap[d.risk_level] || 2);
+    
+    new Chart(canvas, {
+      type: 'radar',
+      data: {
+        labels,
+        datasets: [{
+          label: '風險評分（1=高風險，3=低風險）',
+          data,
+          backgroundColor: 'rgba(22,119,255,0.15)',
+          borderColor: '#1677ff',
+          borderWidth: 2,
+          pointBackgroundColor: '#1677ff',
+          pointRadius: 5,
+          pointHoverRadius: 7,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: {
+          r: {
+            beginAtZero: true,
+            min: 0,
+            max: 3,
+            ticks: { stepSize: 1, backdropColor: 'transparent', font: { size: 10 } },
+            pointLabels: { font: { size: 12, weight: '500' } }
+          }
+        },
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+  }, 200);
+}
+
+function showDiseaseDetail(detailId) {
+  const diseases = window._elderDiseases || [];
+  const d = diseases.find(x => x.id === detailId);
+  if (!d) return;
+  
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal" style="max-width:600px;">
+      <h3 style="font-size:18px;font-weight:600;margin-bottom:16px;">${d.disease_name} - 判斷詳情</h3>
+      <table style="width:100%;font-size:14px;">
+        <tr><td style="padding:8px;color:#86909c;width:120px;">AI 識別結果</td><td style="padding:8px;">${d.ai_result || '-'}</td></tr>
+        <tr><td style="padding:8px;color:#86909c;">依據</td><td style="padding:8px;">${d.evidence || '-'}</td></tr>
+        <tr><td style="padding:8px;color:#86909c;">證據等級</td><td style="padding:8px;">${d.evidence_level || '-'}</td></tr>
+        <tr><td style="padding:8px;color:#86909c;">狀態</td><td style="padding:8px;">${d.status || '-'}</td></tr>
+        <tr><td style="padding:8px;color:#86909c;">是否計入慢病數量</td><td style="padding:8px;">${d.counted_as_chronic ? '是' : '否'}</td></tr>
+        <tr><td style="padding:8px;color:#86909c;">資料來源</td><td style="padding:8px;">${d.source || '-'}</td></tr>
+        <tr><td style="padding:8px;color:#86909c;">更新時間</td><td style="padding:8px;">${d.last_updated || '-'}</td></tr>
+      </table>
+      <div style="text-align:right;margin-top:16px;">
+        <button class="btn-primary" onclick="this.closest('.modal-overlay').remove()">關閉</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+}
+
+// ==================== Risk Dimension Detail Modal ====================
+function showRiskDimensionDetail() {
+  const dimensions = window._elderDimensions || [];
+  const elderName = window._elderName || '';
+  
+  if (dimensions.length === 0) {
+    showToast('暫無風險維度數據', 'warning');
+    return;
+  }
+
+  const statusMap = {
+    '已識別': { bg: '#f6ffed', color: '#389e0d', border: '#b7eb8f' },
+    '待確認': { bg: '#fff7e6', color: '#d46b08', border: '#ffd591' },
+    '關鍵缺失': { bg: '#fff1f0', color: '#cf1322', border: '#ffa39e' },
+    '高優先級': { bg: '#fff1f0', color: '#cf1322', border: '#ffa39e' },
+    '可推薦': { bg: '#e6f7ff', color: '#096dd9', border: '#91d5ff' },
+    '不需要': { bg: '#f5f5f5', color: '#8c8c8c', border: '#d9d9d9' },
+    '已記錄': { bg: '#f6ffed', color: '#389e0d', border: '#b7eb8f' },
+    '系統推斷': { bg: '#f0f5ff', color: '#2f54eb', border: '#d6e4ff' }
+  };
+
+  function statusBadge(status) {
+    const s = statusMap[status] || { bg: '#fafafa', color: '#666', border: '#d9d9d9' };
+    return `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:500;background:${s.bg};color:${s.color};border:1px solid ${s.border};">${status}</span>`;
+  }
+
+  let itemsHtml = '';
+  dimensions.forEach((d, idx) => {
+    const details = d.scoring_details || [];
+    const reasons = Array.isArray(d.key_reasons) ? d.key_reasons.join('；') : (d.key_reasons || '-');
+    const missing = Array.isArray(d.missing_information) ? d.missing_information.join('；') : (d.missing_information || '-');
+    
+    itemsHtml += `
+      <div style="margin-bottom:24px;border:1px solid #f0f0f0;border-radius:12px;overflow:hidden;">
+        <div style="background:#fafafa;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-weight:600;font-size:15px;">${idx + 1}. ${d.dimension_name}</span>
+            <span style="font-size:12px;color:#86909c;">總分: ${d.score || 0}</span>
+          </div>
+          <span class="risk-tag ${riskClass(d.risk_level)}">${riskLabel(d.risk_level)}</span>
+        </div>
+        <div style="padding:16px;">
+          ${details.length > 0 ? `
+          <div style="margin-bottom:12px;overflow-x:auto;">
+            <table style="width:100%;font-size:13px;border-collapse:collapse;">
+              <thead>
+                <tr style="background:#fafafa;">
+                  <th style="padding:8px 12px;text-align:left;border-bottom:2px solid #f0f0f0;font-weight:600;">評分項</th>
+                  <th style="padding:8px 12px;text-align:left;border-bottom:2px solid #f0f0f0;font-weight:600;">當前識別結果</th>
+                  <th style="padding:8px 12px;text-align:center;border-bottom:2px solid #f0f0f0;font-weight:600;width:60px;">得分</th>
+                  <th style="padding:8px 12px;text-align:left;border-bottom:2px solid #f0f0f0;font-weight:600;width:120px;">來源</th>
+                  <th style="padding:8px 12px;text-align:center;border-bottom:2px solid #f0f0f0;font-weight:600;width:90px;">狀態</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${details.map(item => `
+                  <tr>
+                    <td style="padding:8px 12px;border-bottom:1px solid #f5f5f5;font-weight:500;">${item.item || '-'}</td>
+                    <td style="padding:8px 12px;border-bottom:1px solid #f5f5f5;color:#4e5969;max-width:300px;">${item.result || '-'}</td>
+                    <td style="padding:8px 12px;border-bottom:1px solid #f5f5f5;text-align:center;font-weight:600;color:${item.item_score >= 2 ? '#cf1322' : item.item_score >= 1 ? '#d46b08' : '#389e0d'};">${item.item_score !== undefined ? item.item_score : '-'}</td>
+                    <td style="padding:8px 12px;border-bottom:1px solid #f5f5f5;font-size:12px;color:#86909c;">${item.source || '-'}</td>
+                    <td style="padding:8px 12px;border-bottom:1px solid #f5f5f5;text-align:center;">${statusBadge(item.status || '-')}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          ` : '<div style="color:#86909c;font-size:13px;margin-bottom:12px;">暫無詳細評分數據（重新上傳材料或重新生成報告後可用）</div>'}
+          ${reasons !== '-' || missing !== '-' ? `
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            ${reasons !== '-' ? `<div style="padding:10px 14px;background:#fdf6ec;border-radius:8px;border-left:3px solid #fa8c16;">
+              <div style="font-size:12px;color:#d46b08;font-weight:600;margin-bottom:4px;">⚠️ 關鍵原因</div>
+              <div style="font-size:13px;">${reasons}</div>
+            </div>` : ''}
+            ${missing !== '-' ? `<div style="padding:10px 14px;background:#f0f5ff;border-radius:8px;border-left:3px solid #1677ff;">
+              <div style="font-size:12px;color:#0958d9;font-weight:600;margin-bottom:4px;">📋 待確認資料</div>
+              <div style="font-size:13px;">${missing}</div>
+            </div>` : ''}
+          </div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  });
+
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal" style="max-width:900px;max-height:85vh;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;border-bottom:1px solid #f0f0f0;padding-bottom:16px;">
+        <div>
+          <h3 style="font-size:20px;font-weight:700;">五維度風險詳細評分表</h3>
+          ${elderName ? `<p style="font-size:14px;color:#86909c;margin-top:4px;">長者：${elderName} — 以下為系統根據已上傳材料自動生成的逐項評分</p>` : ''}
+        </div>
+        <button class="btn-outline" style="padding:6px 16px;font-size:13px;" onclick="this.closest('.modal-overlay').remove()">關閉</button>
+      </div>
+      <div style="overflow-y:auto;max-height:calc(85vh - 120px);padding-right:4px;">
+        ${itemsHtml}
+        <p style="font-size:12px;color:#bfbfbf;text-align:center;margin-top:8px;">系統根據已上傳材料自動生成 · 部分項目需社工核對確認</p>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+}
+
+// ==================== PAGE 5: One-Page Report ====================
+function renderReport() {
+  return `
+    <div style="padding:32px;max-width:800px;margin:0 auto;" id="report-container">
+      <div style="text-align:center;padding:48px;color:#86909c;">載入中...</div>
+    </div>
+  `;
+}
+
+async function initReport(elderId) {
+  try {
+    console.log('[Report] Fetching report for elder:', elderId);
+    const res = await apiGet(`/reports/${elderId}`);
+    console.log('[Report] API response:', res);
+    if (!res.success) {
+      document.getElementById('report-container').innerHTML = `<div style="text-align:center;padding:48px;color:#ff4d4f;">報告不存在：${res.error || ''}</div>`;
+      return;
+    }
+    
+    const r = res.data;
+    
+    document.getElementById('report-container').innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+        <a href="#" onclick="history.back();return false;" style="color:#86909c;font-size:14px;text-decoration:none;">← 返回</a>
+        <button class="btn-primary" onclick="exportPDF()">匯出 PDF</button>
+      </div>
+      
+      <div id="report-content" style="background:#fff;border-radius:12px;padding:48px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+        <!-- Title -->
+        <div style="text-align:center;margin-bottom:32px;padding-bottom:24px;border-bottom:2px solid #1677ff;">
+          <h1 style="font-size:26px;font-weight:700;color:#1677ff;margin-bottom:8px;">長者一頁通</h1>
+          <p style="color:#86909c;font-size:14px;">${r.elder_name || '長者'} · 評估日期：${r.assessment_date || '-'}</p>
+        </div>
+        
+        <!-- Basic Info -->
+        <div style="margin-bottom:32px;">
+          <h2 style="font-size:18px;font-weight:600;margin-bottom:12px;color:#1677ff;">基本資料</h2>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:14px;">
+            <div><span style="color:#86909c;">姓名：</span>${r.elder_name || '-'}</div>
+            <div><span style="color:#86909c;">年齡：</span>${r.elder_age || '-'} 歲</div>
+            <div><span style="color:#86909c;">性別：</span>${r.elder_gender || '-'}</div>
+            <div><span style="color:#86909c;">檔案編號：</span>${r.archive_no || '-'}</div>
+          </div>
+        </div>
+        
+        <!-- Health Status -->
+        <div style="margin-bottom:32px;">
+          <h2 style="font-size:18px;font-weight:600;margin-bottom:12px;color:#1677ff;">目前需要關注的健康情況</h2>
+          ${r.chronic_diseases && r.chronic_diseases.length > 0 ? `
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+              ${r.chronic_diseases.map(d => `<span class="health-tag" style="font-size:14px;padding:6px 14px;">${d.name}</span>`).join('')}
+            </div>
+          ` : '<p style="color:#86909c;">暫無已確認的慢病記錄。</p>'}
+        </div>
+        
+        <!-- Risk Summary -->
+        <div style="margin-bottom:32px;">
+          <h2 style="font-size:18px;font-weight:600;margin-bottom:12px;color:#1677ff;">最近發現的重點風險</h2>
+          <div style="background:#fafafa;border-radius:8px;padding:20px;">
+            <div style="font-size:15px;font-weight:600;margin-bottom:12px;">整體風險程度：<span style="color:#1677ff;">${r.overall_risk_label || '待評估'}</span></div>
+            ${r.risk_summary && r.risk_summary.length > 0 ? r.risk_summary.map(dim => `
+              <div style="margin-bottom:12px;padding-left:12px;border-left:3px solid ${dim.risk_label.includes('優先') ? '#ff4d4f' : dim.risk_label.includes('留意') ? '#fa8c16' : '#52c41a'};">
+                <div style="font-weight:500;margin-bottom:4px;">${dim.dimension}：${dim.risk_label}</div>
+                ${dim.key_concerns && dim.key_concerns.length > 0 ? 
+                  `<ul style="font-size:13px;color:#4e5969;margin:0;padding-left:16px;">${dim.key_concerns.map(c => `<li>${c}</li>`).join('')}</ul>` : ''}
+              </div>
+            `).join('') : '<p style="color:#86909c;">暫無風險評估數據。</p>'}
+          </div>
+        </div>
+        
+        <!-- Recommendations -->
+        <div style="margin-bottom:32px;">
+          <h2 style="font-size:18px;font-weight:600;margin-bottom:12px;color:#1677ff;">建議下一步跟進</h2>
+          ${r.recommendations && r.recommendations.length > 0 ? `
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              ${r.recommendations.map(rec => `
+                <div style="padding:14px 16px;background:#f6ffed;border-radius:8px;border-left:3px solid #52c41a;font-size:14px;">
+                  ${rec.content}
+                </div>
+              `).join('')}
+            </div>
+          ` : '<p style="color:#86909c;">暫無跟進建議。</p>'}
+        </div>
+        
+        <!-- Resources -->
+        ${r.recommended_resources && r.recommended_resources.length > 0 ? `
+        <div style="margin-bottom:32px;">
+          <h2 style="font-size:18px;font-weight:600;margin-bottom:12px;color:#1677ff;">可供參考的社區資源</h2>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            ${r.recommended_resources.map(res => `
+              <div style="padding:12px 16px;background:#f0f5ff;border-radius:8px;font-size:14px;">
+                <div style="font-weight:500;">${res.name}</div>
+                <div style="font-size:12px;color:#86909c;">${res.type} · ${res.address || ''} · ${res.phone || ''}</div>
+                ${res.reason ? `<div style="font-size:12px;color:#1677ff;">${res.reason}</div>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        ` : ''}
+        
+        <!-- Missing Info -->
+        ${r.missing_info && r.missing_info.length > 0 ? `
+        <div style="margin-bottom:32px;">
+          <h2 style="font-size:18px;font-weight:600;margin-bottom:12px;color:#1677ff;">建議補充的資料</h2>
+          <ul style="font-size:14px;padding-left:20px;color:#4e5969;">
+            ${r.missing_info.map(m => `<li style="margin-bottom:4px;">${m}</li>`).join('')}
+          </ul>
+        </div>
+        ` : ''}
+        
+        <!-- Footer -->
+        <div style="border-top:1px solid #f0f0f0;padding-top:16px;font-size:12px;color:#86909c;text-align:center;">
+          <p>報告生成時間：${new Date().toLocaleString('zh-HK')}</p>
+          <p>資料來源：社工工作台 · 智能長者個案管理系統</p>
+          ${r.updated_at ? `<p>數據更新時間：${r.updated_at}</p>` : ''}
+        </div>
+      </div>
+    `;
+    
+  } catch(e) {
+    console.error('[Report] Error:', e);
+    document.getElementById('report-container').innerHTML = `<div style="text-align:center;padding:48px;color:#ff4d4f;">載入失敗：${e.message || '未知錯誤'}</div>`;
+  }
+}
+
+function exportPDF() {
+  const content = document.getElementById('report-content');
+  if (!content) return;
+  
+  // Simple print-based PDF export
+  const printWindow = window.open('', '_blank', 'width=800,height=600');
+  printWindow.document.write(`
+    <html><head><title>長者一頁通</title>
+    <style>
+      body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; padding: 40px; color: #1d2129; }
+      h1 { color: #1677ff; font-size: 26px; }
+      h2 { color: #1677ff; font-size: 18px; margin-top: 24px; }
+    </style></head><body>${content.innerHTML}</body></html>
+  `);
+  printWindow.document.close();
+  setTimeout(() => { printWindow.print(); }, 500);
+}
+
+// ==================== Init ====================
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!window.location.hash) {
+    window.location.hash = '#/';
+    return;
+  }
+  currentRoute = getRouteFromHash();
+  
+  // Check server first
+  const ok = await checkServerConnection();
+  if (!ok) {
+    showOfflinePage();
+    retryConnection(); // Start auto-retry
+    return;
+  }
+  serverOnline = true;
+  updateSidebarActive();
+  renderPage();
+});
+</script>
+
+</body>
+</html>

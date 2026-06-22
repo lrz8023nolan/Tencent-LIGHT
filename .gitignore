@@ -1,0 +1,21 @@
+# 敏感配置
+server/.env
+
+# 数据库文件
+server/db/*.db
+server/db/*.db-wal
+server/db/*.db-shm
+
+# 上传文件
+server/uploads/*
+!server/uploads/.gitkeep
+
+# 依赖
+node_modules/
+
+# 系统
+.DS_Store
+Thumbs.db
+
+# WorkBuddy
+.workbuddy/

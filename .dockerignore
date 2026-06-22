@@ -1,0 +1,58 @@
+# 本地依赖 — 线上重新安装
+node_modules
+
+# 敏感信息 — 绝对不上传
+.env
+.env.local
+.env.production
+
+# 数据库文件 — 线上独立初始化
+*.db
+*.db-wal
+*.db-shm
+
+# 上传文件 — 线上独立存储
+uploads/*
+!uploads/.gitkeep
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE / 编辑器
+.vscode
+.idea
+*.swp
+*.swo
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 测试文件
+test/
+
+# 文档 / 临时文件
+*.md
+!README.md
+第二轮PPT核心内容.docx
+细则表.docx
+细则表.md
+round1_ppt_content.md
+
+# 资源文件（不进入镜像）
+6 pages UI/
+访谈问卷/
+风险评估体系/
+AI/
+demo演示/
+library/
+
+# 根项目无关依赖
+create_ppt.js
+artifact-build-manifest.json
+package-lock.json
+
+# WorkBuddy
+.workbuddy/

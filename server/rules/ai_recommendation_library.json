@@ -1,0 +1,1028 @@
+{
+  "recommendation_rules": [
+    {
+      "rule_id": "CH-001",
+      "dimension": "慢性病管理",
+      "risk_level": "high",
+      "trigger_condition": "長者患有高血壓且血壓控制不理想（收縮壓≥140或舒張壓≥90），或過去一年曾因高血壓引發併發症",
+      "required_inputs": [
+        "血壓記錄",
+        "用藥情況",
+        "最近一次復診日期",
+        "有無併發症"
+      ],
+      "recommended_resource_types": [
+        "District Health Centre",
+        "Elderly Health Centre"
+      ],
+      "matching_logic": "優先推薦同一區的DHC或EHC；若已登記DHC則提醒跟進；若無則建議盡快登記DHC進行慢性病管理計劃",
+      "priority_score": 90,
+      "recommendation_title": "高血壓管理跟進",
+      "recommendation_reason_template_zh": "{{長者姓名}}的血壓記錄顯示控制不理想（最近量度：{{血壓值}}）。高血壓如不妥善控制，可能增加中風及心臟病風險。建議盡快安排跟進。",
+      "recommendation_reason_template_en": "{{elderly_name}}'s blood pressure records indicate poor control (latest reading: {{bp_value}}). Uncontrolled hypertension increases the risk of stroke and heart disease. Follow-up is strongly recommended.",
+      "action_template_zh": "建議社工協助{{長者姓名}}登記{{地區名}}地區康健中心（電話：{{電話}}），參加慢性病管理計劃，定期監測血壓。如已登記，請提醒按時覆診。",
+      "action_template_en": "Social worker should assist {{elderly_name}} in enrolling at {{district}} District Health Centre (Tel: {{phone}}) for chronic disease management and regular BP monitoring. If already enrolled, remind them to attend follow-up appointments.",
+      "escalation_needed": false,
+      "safety_warning": null,
+      "evidence_or_policy_basis": "衛生署《基層醫療健康指引》——高血壓管理建議長者定期監測血壓，收縮壓目標一般為<140mmHg（如無合併症）。世界衛生組織建議成年人定期血壓篩查。",
+      "human_review_needed": false,
+      "version": "1.0",
+      "last_updated": "2026-05-25"
+    },
+    {
+      "rule_id": "CH-002",
+      "dimension": "慢性病管理",
+      "risk_level": "high",
+      "trigger_condition": "長者患有糖尿病且糖化血紅素(HbA1c)≥7.5%，或長期未進行糖化血紅素檢測，或出現糖尿病併發症徵兆",
+      "required_inputs": [
+        "HbA1c值或血糖記錄",
+        "用藥情況",
+        "最近一次復診日期",
+        "有無併發症徵兆（視力模糊、足部潰瘍、頻密排尿）"
+      ],
+      "recommended_resource_types": [
+        "District Health Centre",
+        "Elderly Health Centre"
+      ],
+      "matching_logic": "優先推薦同一區的DHC或EHC；DHC提供糖尿病管理計劃；EHC提供健康評估",
+      "priority_score": 92,
+      "recommendation_title": "糖尿病管理跟進",
+      "recommendation_reason_template_zh": "{{長者姓名}}的血糖/HbA1c控制不理想（{{HbA1c值或血糖值}}）。糖尿病如不妥善管理，可能導致視力受損、腎衰竭及截肢等嚴重併發症。",
+      "recommendation_reason_template_en": "{{elderly_name}}'s blood glucose/HbA1c is poorly controlled ({{hba1c_or_glucose_value}}). Poorly managed diabetes can lead to serious complications including vision loss, kidney failure and amputation.",
+      "action_template_zh": "建議社工協助{{長者姓名}}登記{{地區名}}地區康健中心（電話：{{電話}}）的糖尿病管理計劃，定期監測血糖及HbA1c，並接受飲食及運動指導。",
+      "action_template_en": "Social worker should assist {{elderly_name}} in enrolling at {{district}} District Health Centre (Tel: {{phone}}) diabetes management programme for regular glucose/HbA1c monitoring and dietary/exercise counselling.",
+      "escalation_needed": false,
+      "safety_warning": "如長者出現持續血糖極高（>20mmol/L）或伴有噁心、嘔吐、神志不清等糖尿病酮症酸中毒症狀，應立即送醫。",
+      "evidence_or_policy_basis": "國際糖尿病聯盟(IDF)建議成人糖尿病患者HbA1c目標一般<7.0%。衛生署基層醫療健康署建議定期篩查及管理。",
+      "human_review_needed": false,
+      "version": "1.0",
+      "last_updated": "2026-05-25"
+    },
+    {
+      "rule_id": "CH-003",
+      "dimension": "慢性病管理",
+      "risk_level": "medium",
+      "trigger_condition": "長者患有高血脂（總膽固醇≥5.2mmol/L或LDL≥3.4mmol/L）或長期未檢測血脂水平",
+      "required_inputs": [
+        "血脂記錄（總膽固醇、LDL、HDL、三酸甘油酯）",
+        "最近一次血脂檢測日期"
+      ],
+      "recommended_resource_types": [
+        "District Health Centre",
+        "Elderly Health Centre"
+      ],
+      "matching_logic": "優先推薦同一區DHC進行健康評估及血脂管理",
+      "priority_score": 75,
+      "recommendation_title": "高血脂管理跟進",
+      "recommendation_reason_template_zh": "{{長者姓名}}的血脂水平偏高（總膽固醇：{{總膽固醇值}}）。高血脂是心血管疾病的重要危險因素，建議定期監測及採取生活方式改善措施。",
+      "recommendation_reason_template_en": "{{elderly_name}}'s lipid levels are elevated (Total cholesterol: {{total_cholesterol_value}}). Dyslipidaemia is a major risk factor for cardiovascular disease. Regular monitoring and lifestyle modification are recommended.",
+      "action_template_zh": "建議協助{{長者姓名}}聯絡{{地區名}}地區康健中心（電話：{{電話}}），進行健康評估並參加血脂管理計劃。",
+      "action_template_en": "Recommend {{elderly_name}} to contact {{district}} District Health Centre (Tel: {{phone}}) for health assessment and lipid management programme.",
+      "escalation_needed": false,
+      "safety_warning": null,
+      "evidence_or_policy_basis": "美國心臟協會/美國心臟病學會(AHA/ACC)血脂管理指引建議心血管高風險患者LDL目標<1.8mmol/L。",
+      "human_review_needed": false,
+      "version": "1.0",
+      "last_updated": "2026-05-25"
+    },
+    {
+      "rule_id": "CH-004",
+      "dimension": "慢性病管理",
+      "risk_level": "high",
+      "trigger_condition": "長者同時患有三種或以上慢性病（如高血壓+糖尿病+高血脂+心臟病+腎病等）",
+      "required_inputs": [
+        "已確診慢性病清單",
+        "各疾病控制情況",
+        "用藥數量",
+        "最近一次綜合復診日期"
+      ],
+      "recommended_resource_types": [
+        "District Health Centre",
+        "Elderly Health Centre"
+      ],
+      "matching_logic": "優先推薦DHC進行綜合慢性病管理；DHC可提供跨疾病協調管理",
+      "priority_score": 95,
+      "recommendation_title": "多重慢病綜合管理",
+      "recommendation_reason_template_zh": "{{長者姓名}}患有{{慢病數量}}種慢性病（{{慢病清單}}），屬於多重慢病患者。多重慢病增加用藥複雜性及不良藥物交互作用的風險，需要綜合協調管理。",
+      "recommendation_reason_template_en": "{{elderly_name}} has {{number_of_conditions}} chronic conditions ({{condition_list}}), classified as multi-morbidity. This increases medication complexity and risk of adverse drug interactions, requiring coordinated management.",
+      "action_template_zh": "強烈建議社工協助{{長者姓名}}登記{{地區名}}地區康健中心（電話：{{電話}}），參加綜合慢性病管理計劃，獲得專業團隊的跨疾病協調管理。同時建議安排藥物核對。",
+      "action_template_en": "Strongly recommend social worker to assist {{elderly_name}} in enrolling at {{district}} District Health Centre (Tel: {{phone}}) for comprehensive chronic disease management and medication review.",
+      "escalation_needed": false,
+      "safety_warning": "多重慢病患者用藥種類多，需特別注意藥物交互作用。如長者出現頭暈、跌倒、意識模糊等不適，應懷疑藥物不良反應並及時求醫。",
+      "evidence_or_policy_basis": "英國國家健康與臨床優化研究院(NICE)建議多重慢病患者應接受以患者為中心的綜合管理計劃，包括定期藥物核對。",
+      "human_review_needed": false,
+      "version": "1.0",
+      "last_updated": "2026-05-25"
+    },
+    {
+      "rule_id": "CH-005",
+      "dimension": "慢性病管理",
+      "risk_level": "medium",
+      "trigger_condition": "長者沒有固定家庭醫生，或超過一年未看醫生",
+      "required_inputs": [
+        "是否有家庭醫生",
+        "最近一次看醫生的日期",
+        "所患慢性病（如有）"
+      ],
+      "recommended_resource_types": [
+        "District Health Centre"
+      ],
+      "matching_logic": "推薦居住地的DHC作為基層醫療的首選；DHC提供類似家庭醫生的連續性照顧",
+      "priority_score": 70,
+      "recommendation_title": "建立基層醫療連繫",
+      "recommendation_reason_template_zh": "{{長者姓名}}目前沒有固定的基層醫療服務提供者{{如適用：，且超過{{時間}}未看醫生}}。有慢性病而沒有定期跟進，可能導致病情惡化而不自知。",
+      "recommendation_reason_template_en": "{{elderly_name}} currently does not have a regular primary healthcare provider{{if_applicable: and has not seen a doctor for over {{duration}}}}. Having chronic conditions without regular follow-up may lead to undetected deterioration.",
+      "action_template_zh": "建議社工協助{{長者姓名}}登記{{地區名}}地區康健中心（電話：{{電話}}），建立基層醫療連繫。DHC會提供健康評估、慢性病管理及健康推廣服務。",
+      "action_template_en": "Recommend social worker to assist {{elderly_name}} in registering at {{district}} District Health Centre (Tel: {{phone}}) for primary healthcare establishment.",
+      "escalation_needed": false,
+      "safety_warning": null,
+      "evidence_or_policy_basis": "衛生署基層醫療健康策略鼓勵市民建立個人基層醫療家庭醫生/地區康健中心連繫，以實踐「首診及持續照顧」。",
+      "human_review_needed": false,
+      "version": "1.0",
+      "last_updated": "2026-05-25"
+    },
+    {
+      "rule_id": "CH-006",
+      "dimension": "慢性病管理",
+      "risk_level": "high",
+      "trigger_condition": "長者不清楚自己所服藥物的名稱、用途或劑量",
+      "required_inputs": [
+        "用藥清單",
+        "長者能否正確說出藥物名稱和用途",
+        "照顧者協助用藥情況"
+      ],
+      "recommended_resource_types": [
+        "District Health Centre",
+        "Elderly Health Centre"
+      ],
+      "matching_logic": "推薦DHC進行藥物核對及藥物管理輔導；如伴有認知問題可加推長者中心支援",
+      "priority_score": 88,
+      "recommendation_title": "藥物管理支援",
+      "recommendation_reason_template_zh": "{{長者姓名}}不清楚自己所服藥物的名稱或用途{{如適用：，目前服藥{{藥物數量}}種}}。用藥認知不足可能導至漏服、錯服或重複服藥，增加不良反應風險。",
+      "recommendation_reason_template_en": "{{elderly_name}} is unable to correctly describe the names or purposes of their medications{{if_applicable: currently taking {{number_of_medications}} medications}}. Poor medication knowledge increases the risk of missed, incorrect or duplicate dosing.",
+      "action_template_zh": "建議社工協助{{長者姓名}}聯絡{{地區名}}地區康健中心（電話：{{電話}}），安排藥物核對及用藥指導。同時建議準備藥物清單及使用分藥盒輔助。",
+      "action_template_en": "Recommend social worker to assist {{elderly_name}} in contacting {{district}} District Health Centre (Tel: {{phone}}) for medication review and counselling.",
+      "escalation_needed": false,
+      "safety_warning": "如長者近期出現不明原因的頭暈、噁心、皮疹或出血等症狀，應懷疑藥物不良反應，需立即求醫。",
+      "evidence_or_policy_basis": "醫院管理局藥物安全指引建議長者定期進行藥物核對，尤其服用多種藥物的患者。",
+      "human_review_needed": false,
+      "version": "1.0",
+      "last_updated": "2026-05-25"
+    },
+    {
+      "rule_id": "CH-007",
+      "dimension": "慢性病管理",
+      "risk_level": "high",
+      "trigger_condition": "長者患有慢性病但超過12個月未覆診",
+      "required_inputs": [
+        "所患慢性病種類",
+        "最近一次覆診日期",
+        "目前用藥情況",
+        "症狀變化"
+      ],
+      "recommended_resource_types": [
+        "District Health Centre",
+        "Elderly Health Centre"
+      ],
+      "matching_logic": "優先推薦同一區DHC進行全面健康評估；如已登記DHC則提醒預約覆診",
+      "priority_score": 85,
+      "recommendation_title": "慢性病長期未覆診跟進",
+      "recommendation_reason_template_zh": "{{長者姓名}}患有{{慢性病名稱}}，但已超過{{時間}}未覆診。長期缺乏醫療跟進可能導致病情惡化而不自知。",
+      "recommendation_reason_template_en": "{{elderly_name}} has {{condition_name}} but has not had a follow-up appointment for over {{duration}}. Prolonged lack of medical follow-up may lead to undetected disease progression.",
+      "action_template_zh": "建議社工協助{{長者姓名}}盡快預約{{地區名}}地區康健中心（電話：{{電話}}）進行全面健康評估及慢性病跟進。",
+      "action_template_en": "Recommend social worker to assist {{elderly_name}} in scheduling a comprehensive health assessment at {{district}} District Health Centre (Tel: {{phone}}) as soon as possible.",
+      "escalation_needed": false,
+      "safety_warning": null,
+      "evidence_or_policy_basis": "衛生署建議慢性病患者應定期覆診，一般高血壓患者每3-6個月覆診一次，糖尿病患者每3個月覆診一次。",
+      "human_review_needed": false,
+      "version": "1.0",
+      "last_updated": "2026-05-25"
+    },
+    {
+      "rule_id": "FA-001",
+      "dimension": "跌倒風險",
+      "risk_level": "high",
+      "trigger_condition": "長者在過去12個月內曾有跌倒（一次或以上）",
+      "required_inputs": [
+        "過去一年跌倒次數",
+        "跌倒地點（家中/戶外）",
+        "跌倒受傷情況",
+        "跌倒原因（如已知）"
+      ],
+      "recommended_resource_types": [
+        "District Health Centre",
+        "Elderly Health Centre",
+        "Physiotherapy/Occupational Therapy Service",
+        "Home Safety Assessment"
+      ],
+      "matching_logic": "優先推薦DHC進行跌倒風險評估；推薦醫院管理局物理治療及職業治療服務；推薦家居安全評估",
+      "priority_score": 88,
+      "recommendation_title": "跌倒歷史評估及預防",
+      "recommendation_reason_template_zh": "{{長者姓名}}在過去一年內跌倒{{跌倒次數}}次{{如適用：，最近一次跌倒導致{{受傷情況}}}}。曾跌倒的長者再次跌倒的風險顯著增加，需採取預防措施。",
+      "recommendation_reason_template_en": "{{elderly_name}} has fallen {{number_of_falls}} time(s) in the past year{{if_applicable: with the most recent fall resulting in {{injury_description}}}}. Elderly with a fall history have significantly higher risk of recurrent falls. Preventive measures are needed.",
+      "action_template_zh": "建議社工協助{{長者姓名}}：（1）聯絡{{地區名}}地區康健中心（電話：{{電話}}）進行跌倒風險評估；（2）安排家居安全評估；（3）轉介物理治療服務進行平衡及肌力訓練。",
+      "action_template_en": "Recommend social worker to assist {{elderly_name}}: (1) Contact {{district}} DHC (Tel: {{phone}}) for fall risk assessment; (2) Arrange home safety assessment; (3) Refer to physiotherapy for balance and strength training.",
+      "escalation_needed": false,
+      "safety_warning": "如長者因跌倒導致骨折或頭部受傷，應立即送醫。跌倒後持續頭痛、嘔吐或意識模糊需緊急就醫。",
+      "evidence_or_policy_basis": "美國疾病控制及預防中心(CDC) STEADI工具包建議對曾跌倒長者進行全面跌倒風險評估。香港衛生署推動「防跌有法」運動。",
+      "human_review_needed": false,
+      "version": "1.0",
+      "last_updated": "2026-05-25"
+    },
+    {
+      "rule_id": "FA-002",
+      "dimension": "跌倒風險",
+      "risk_level": "medium",
+      "trigger_condition": "長者行動不穩、步態緩慢或需要扶行",
+      "required_inputs": [
+        "行動能力評估",
+        "是否使用助行器具",
+        "家居環境評估"
+      ],
+      "recommended_resource_types": [
+        "District Health Centre",
+        "Physiotherapy/Occupational Therapy Service",
+        "Home Safety Assessment"
+      ],
+      "matching_logic": "推薦DHC進行行動能力評估；推薦物理治療改善步態及平衡；推薦職業治療進行家居安全評估",
+      "priority_score": 78,
+      "recommendation_title": "行動能力改善及防跌",
+      "recommendation_reason_template_zh": "{{長者姓名}}的行動能力欠佳{{如適用：，需要使用{{助行器具}}}}。行動不穩是跌倒的重要危險因素，通過適當的訓練和環境改善可以降低風險。",
+      "recommendation_reason_template_en": "{{elderly_name}} has limited mobility{{if_applicable: and requires {{mobility_aid}}}}. Poor mobility is a major fall risk factor. Appropriate training and environmental modifications can reduce risk.",
+      "action_template_zh": "建議社工協助{{長者姓名}}：（1）轉介物理治療進行肌力及平衡訓練；（2）安排職業治療進行家居安全評估；（3）聯絡{{地區名}}地區康健中心（電話：{{電話}}）參加防跌運動班。",
+      "action_template_en": "Recommend social worker to assist {{elderly_name}}: (1) Refer to physiotherapy for strength and balance training; (2) Arrange OT home safety assessment; (3) Contact {{district}} DHC (Tel: {{phone}}) for fall prevention exercise class.",
+      "escalation_needed": false,
+      "safety_warning": null,
+      "evidence_or_policy_basis": "Cochrane系統性文獻回顧證實運動訓練（特別是平衡及阻力訓練）能有效降低社區長者跌倒率約20-30%。",
+      "human_review_needed": false,
+      "version": "1.0",
+      "last_updated": "2026-05-25"
+    },
+    {
+      "rule_id": "FA-003",
+      "dimension": "跌倒風險",
+      "risk_level": "medium",
+      "trigger_condition": "長者害怕外出（怕跌倒），導致活動量減少",
+      "required_inputs": [
+        "是否害怕外出",
+        "外出頻率變化",
+        "過去跌倒經歷（如有）",
+        "社交活動參與情況"
+      ],
+      "recommended_resource_types": [
+        "District Health Centre",
+        "District Elderly Community Centre",
+        "Neighbourhood Elderly Centre"
+      ],
+      "matching_logic": "推薦DHC進行防跌評估；推薦長者地區中心或鄰舍中心參加活動增加社交及信心",
+      "priority_score": 72,
+      "recommendation_title": "跌倒恐懼症評估及支援",
+      "recommendation_reason_template_zh": "{{長者姓名}}害怕外出（怕跌倒）{{如適用：，外出頻率已由{{之前頻率}}減至{{現在頻率}}}}。跌倒恐懼會導致活動減少、體能下降，反而增加跌倒風險，形成惡性循環。",
+      "recommendation_reason_template_en": "{{elderly_name}} has fear of falling{{if_applicable: and has reduced outings from {{previous_frequency}} to {{current_frequency}}}}. Fear of falling leads to reduced activity, deconditioning and paradoxically increases fall risk.",
+      "action_template_zh": "建議社工協助{{長者姓名}}：（1）聯絡{{地區名}}地區康健中心（電話：{{電話}}）進行跌倒風險評估；（2）鼓勵參加{{地區名}}長者中心的防跌運動班及社交活動，逐步重建信心。",
+      "action_template_en": "Recommend social worker to assist {{elderly_name}}: (1) Contact {{district}} DHC (Tel: {{phone}}) for fall risk assessment; (2) Encourage participation in elderly centre fall prevention classes and social activities.",
+      "escalation_needed": false,
+      "safety_warning": "如跌倒恐懼已嚴重影響日常生活（如不肯起床、不肯洗澡），需關注是否合併抑鬱症狀。",
+      "evidence_or_policy_basis": "國際跌倒研究顯示約30-50%的社區長者存在不同程度的跌倒恐懼。漸進式運動訓練和認知行為介入已被證實有效。",
+      "human_review_needed": false,
+      "version": "1.0",
+      "last_updated": "2026-05-25"
+    },
+    {
+      "rule_id": "ADL-001",
+      "dimension": "生活能力",
+      "risk_level": "high",
+      "trigger_condition": "長者做飯有困難，或無法準備營養均衡的膳食",
+      "required_inputs": [
+        "做飯能力評估",
+        "飲食情況（是否經常 skip meals）",
+        "營養狀況（體重變化）",
+        "是否有照顧者協助"
+      ],
+      "recommended_resource_types": [
+        "Meal Service",
+        "Enhanced Home and Community Care Services Team",
+        "District Elderly Community Centre"
+      ],
+      "matching_logic": "推薦社區膳食服務（送餐或長者飯堂）；如需更多家居支援可轉介改善家居照顧服務",
+      "priority_score": 85,
+      "recommendation_title": "膳食支援及營養改善",
+      "recommendation_reason_template_zh": "{{長者姓名}}在做飯方面遇到困難{{如適用：，體重在{{時間}}內下降了{{體重變化}}}}。營養不良會削弱免疫力，增加患病和跌倒風險。",
+      "recommendation_reason_template_en": "{{elderly_name}} has difficulty preparing meals{{if_applicable: and has lost {{weight_change}} in {{duration}}}}. Malnutrition weakens immunity and increases the risk of illness and falls.",
+      "action_template_zh": "建議社工協助{{長者姓名}}申請社區膳食服務（如送餐到戶或長者飯堂）。如需進一步支援，可考慮轉介改善家居及社區照顧服務隊。詳情可向{{地區名}}長者地區中心查詢。",
+      "action_template_en": "Recommend social worker to assist {{elderly_name}} in applying for community meal services (home-delivered meals or elderly canteens). If further support is needed, consider referral to Enhanced Home and Community Care Services Team.",
+      "escalation_needed": false,
+      "safety_warning": "如長者體重在短期內（3-6個月）下降超過5%，需警惕潛在的嚴重健康問題（如惡性腫瘤、嚴重抑鬱等），應建議盡快求醫。",
+      "evidence_or_policy_basis": "香港老年人營養調查顯示約15-20%社區長者存在營養不良風險。社會福利署資助多個機構提供長者膳食服務。",
+      "human_review_needed": false,
+      "version": "1.0",
+      "last_updated": "2026-05-25"
+    },
+    {
+      "rule_id": "ADL-002",
+      "dimension": "生活能力",
+      "risk_level": "high",
+      "trigger_condition": "長者洗澡有困難，或有跌倒於浴室的風險",
+      "required_inputs": [
+        "洗澡能力評估",
+        "浴室設施情況",
+        "是否有照顧者協助洗澡",
+        "過去浴室跌倒經歷"
+      ],
+      "recommended_resource_types": [
+        "Enhanced Home and Community Care Services Team",
+        "Integrated Home Care Services Team",
+        "Home Safety Assessment",
+        "Occupational Therapy Service"
+      ],
+      "matching_logic": "推薦家居照顧服務提供到戶洗澡協助；推薦職業治療進行浴室改造評估",
+      "priority_score": 87,
+      "recommendation_title": "洗澡安全及家居照顧",
+      "recommendation_reason_template_zh": "{{長者姓名}}在洗澡方面遇到困難{{如適用：，過去曾在浴室跌倒}}。浴室是長者跌倒最常見的地點之一，需要採取預防措施。",
+      "recommendation_reason_template_en": "{{elderly_name}} has difficulty with bathing{{if_applicable: and has a history of falls in the bathroom}}. The bathroom is one of the most common locations for elderly falls. Preventive measures are needed.",
+      "action_template_zh": "建議社工：（1）協助{{長者姓名}}申請改善家居及社區照顧服務（EHCCS）或綜合家居照顧服務（IHC），提供到戶洗澡協助；（2）安排職業治療進行浴室安全評估及改裝建議（如安裝扶手、防滑墊等）。",
+      "action_template_en": "Recommend social worker to: (1) Assist {{elderly_name}} in applying for EHCCS or IHC for bathing assistance; (2) Arrange OT assessment for bathroom modifications.",
+      "escalation_needed": false,
+      "safety_warning": null,
+      "evidence_or_policy_basis": "家居照顧服務需經「安老服務統一評估機制」評估。醫院管理局職業治療部可提供家居環境改造評估。",
+      "human_review_needed": false,
+      "version": "1.0",
+      "last_updated": "2026-05-25"
+    },
+    {
+      "rule_id": "ADL-003",
+      "dimension": "生活能力",
+      "risk_level": "medium",
+      "trigger_condition": "長者外出有困難，缺乏交通工具或體力不支",
+      "required_inputs": [
+        "外出能力評估",
+        "出行方式",
+        "社區活動參與情況",
+        "是否有照顧者陪同"
+      ],
+      "recommended_resource_types": [
+        "Integrated Home Care Services Team",
+        "District Elderly Community Centre",
+        "Neighbourhood Elderly Centre"
+      ],
+      "matching_logic": "推薦家居照顧服務提供到戶支援；推薦長者中心提供社交活動及接送服務",
+      "priority_score": 73,
+      "recommendation_title": "外出支援及社區連結",
+      "recommendation_reason_template_zh": "{{長者姓名}}在外出方面遇到困難{{如適用：，主要原因為{{原因}}}}。外出困難會導致社交孤立及身心健康下降。",
+      "recommendation_reason_template_en": "{{elderly_name}} has difficulty going out{{if_applicable: mainly due to {{reason}}}}. Difficulty going out leads to social isolation and deterioration in physical and mental health.",
+      "action_template_zh": "建議社工：（1）協助{{長者姓名}}聯絡{{地區名}}長者地區中心或鄰舍中心，了解活動接送安排；（2）如需要，可協助申請綜合家居照顧服務的陪診服務。",
+      "action_template_en": "Recommend social worker to: (1) Help {{elderly_name}} contact {{district}} DECC or NEC for activity transportation; (2) If needed, apply for IHC escort service for medical appointments.",
+      "escalation_needed": false,
+      "safety_warning": null,
+      "evidence_or_policy_basis": "香港社會福利署資助長者地區中心及鄰舍中心提供社區活動及部分接送服務，幫助行動不便長者維持社交連結。",
+      "human_review_needed": false,
+      "version": "1.0",
+      "last_updated": "2026-05-25"
+    },
+    {
+      "rule_id": "ADL-004",
+      "dimension": "生活能力",
+      "risk_level": "high",
+      "trigger_condition": "長者在服藥管理方面有困難（經常漏服、服錯藥或無法自行管理藥物）",
+      "required_inputs": [
+        "服藥管理能力",
+        "用藥數量",
+        "是否使用分藥盒",
+        "照顧者協助用藥情況"
+      ],
+      "recommended_resource_types": [
+        "District Health Centre",
+        "Enhanced Home and Community Care Services Team"
+      ],
+      "matching_logic": "推薦DHC進行藥物核對及管理輔導；如需要可轉介EHCCS提供到戶用藥提醒",
+      "priority_score": 86,
+      "recommendation_title": "服藥管理支援",
+      "recommendation_reason_template_zh": "{{長者姓名}}在服藥管理方面遇到困難{{如適用：，目前服藥{{藥物數量}}種，經常{{服藥問題}}}}。服藥管理不善可能導致病情失控或藥物不良反應。",
+      "recommendation_reason_template_en": "{{elderly_name}} has difficulty with medication management{{if_applicable: currently taking {{number_of_medications}} medications and frequently {{medication_issue}}}}. Poor medication management may lead to uncontrolled conditions or adverse drug reactions.",
+      "action_template_zh": "建議社工：（1）協助{{長者姓名}}聯絡{{地區名}}地區康健中心（電話：{{電話}}）進行藥物核對；（2）建議使用分藥盒並設定服藥提醒；（3）如需要，可轉介改善家居照顧服務提供到戶用藥提醒。",
+      "action_template_en": "Recommend social worker to: (1) Help {{elderly_name}} contact {{district}} DHC (Tel: {{phone}}) for medication review; (2) Suggest pill box and medication reminders; (3) If needed, refer to EHCCS for home medication reminders.",
+      "escalation_needed": false,
+      "safety_warning": null,
+      "evidence_or_policy_basis": "藥物管理是長者居家安全的重要環節。分藥盒、服藥日曆及到戶服藥提醒均為有效的輔助工具。",
+      "human_review_needed": false,
+      "version": "1.0",
+      "last_updated": "2026-05-25"
+    },
+    {
+      "rule_id": "CG-001",
+      "dimension": "認知溝通",
+      "risk_level": "medium",
+      "trigger_condition": "長者自我報告或照顧者反映記憶力下降",
+      "required_inputs": [
+        "記憶力變化描述",
+        "影響日常生活程度",
+        "最近一次認知評估（如有）",
+        "是否有照顧者"
+      ],
+      "recommended_resource_types": [
+        "District Health Centre",
+        "Elderly Health Centre"
+      ],
+      "matching_logic": "推薦DHC或EHC進行初步認知評估；如評估結果異常可轉介專科",
+      "priority_score": 75,
+      "recommendation_title": "記憶力下降評估",
+      "recommendation_reason_template_zh": "{{長者姓名}}反映記憶力有下降{{如適用：，具體表現為{{記憶力問題描述}}}}。記憶力下降的原因很多，包括正常老化、營養不良、抑鬱症及認知障礙症等，需要專業評估鑑別。",
+      "recommendation_reason_template_en": "{{elderly_name}} reports memory decline{{if_applicable: specifically {{memory_issue_description}}}}. Memory decline has many causes including normal ageing, malnutrition, depression and dementia. Professional assessment is needed for differential diagnosis.",
+      "action_template_zh": "建議社工協助{{長者姓名}}聯絡{{地區名}}地區康健中心（電話：{{電話}}）或{{地區名}}長者健康中心，安排初步認知功能評估。",
+      "action_template_en": "Recommend social worker to assist {{elderly_name}} in contacting {{district}} DHC (Tel: {{phone}}) or Elderly Health Centre for initial cognitive assessment.",
+      "escalation_needed": false,
+      "safety_warning": null,
+      "evidence_or_policy_basis": "衛生署建議65歲以上長者定期接受認知功能評估。簡易精神狀態檢查(MMSE)及蒙特利爾認知評估(MoCA)為常用篩查工具。",
+      "human_review_needed": false,
+      "version": "1.0",
+      "last_updated": "2026-05-25"
+    },
+    {
+      "rule_id": "CG-002",
+      "dimension": "認知溝通",
+      "risk_level": "high",
+      "trigger_condition": "長者經常忘記吃藥（與ADL-004觸發條件不同，此處側重認知因素而非管理能力）",
+      "required_inputs": [
+        "遺忘服藥頻率",
+        "認知功能評估（如有）",
+        "是否已有分藥盒等輔助工具"
+      ],
+      "recommended_resource_types": [
+        "District Health Centre",
+        "Elderly Health Centre",
+        "District Elderly Community Centre"
+      ],
+      "matching_logic": "推薦DHC或EHC進行認知評估；推薦長者中心參加認知訓練班；可配合藥物管理輔助工具",
+      "priority_score": 83,
+      "recommendation_title": "因認知因素導致的服藥遺漏",
+      "recommendation_reason_template_zh": "{{長者姓名}}經常忘記服藥{{如適用：，平均每週遺漏{{頻率}}次}}。經常遺漏服藥可能與記憶力下降有關，需要評估認知功能並提供適當支援。",
+      "recommendation_reason_template_en": "{{elderly_name}} frequently forgets to take medications{{if_applicable: approximately {{frequency}} times per week}}. This may be related to memory decline and requires cognitive assessment and appropriate support.",
+      "action_template_zh": "建議社工：（1）協助{{長者姓名}}聯絡DHC或EHC進行認知功能評估；（2）推薦參加長者中心的認知訓練活動；（3）建議使用分藥盒及鬧鐘提醒；（4）如有照顧者，加強照顧者教育。",
+      "action_template_en": "Recommend social worker to: (1) Help {{elderly_name}} get cognitive assessment at DHC/EHC; (2) Refer to elderly centre cognitive training; (3) Suggest pill box and alarm reminders; (4) Educate carer if available.",
+      "escalation_needed": false,
+      "safety_warning": null,
+      "evidence_or_policy_basis": "認知障礙症患者常出現服藥依從性差的問題。系統性回顧顯示多種介入措施（分藥盒、提醒系統、照顧者教育）能有效改善服藥依從性。",
+      "human_review_needed": false,
+      "version": "1.0",
+      "last_updated": "2026-05-25"
+    },
+    {
+      "rule_id": "CG-003",
+      "dimension": "認知溝通",
+      "risk_level": "high",
+      "trigger_condition": "長者表達困難（言語含糊、找詞困難、理解能力下降），照顧者或社工懷疑認知退化",
+      "required_inputs": [
+        "表達困難的具體描述",
+        "起始時間及進展速度",
+        "是否影響日常溝通",
+        "最近認知評估（如有）"
+      ],
+      "recommended_resource_types": [
+        "District Health Centre",
+        "Elderly Health Centre"
+      ],
+      "matching_logic": "推薦DHC或EHC進行全面認知評估；如評估結果異常轉介記憶科門診或老年精神科",
+      "priority_score": 90,
+      "recommendation_title": "認知退化疑似評估",
+      "recommendation_reason_template_zh": "{{長者姓名}}出現表達困難的症狀（{{症狀描述}}），可能與認知功能退化有關。早期評估和干預對認知障礙症的治療效果較好。",
+      "recommendation_reason_template_en": "{{elderly_name}} shows symptoms of expressive difficulty ({{symptom_description}}), which may be related to cognitive decline. Early assessment and intervention yield better outcomes for dementia.",
+      "action_template_zh": "建議社工盡快協助{{長者姓名}}聯絡{{地區名}}地區康健中心（電話：{{電話}}）或長者健康中心，進行全面的認知功能評估。如初步評估結果異常，應轉介醫院管理局記憶科門診或老年精神科作進一步診斷。",
+      "action_template_en": "Recommend social worker to urgently assist {{elderly_name}} in contacting {{district}} DHC (Tel: {{phone}}) or EHC for comprehensive cognitive assessment. If abnormal, refer to HA Memory Clinic or Psychogeriatrics for further diagnosis.",
+      "escalation_needed": false,
+      "safety_warning": "如認知退化急劇惡化（數週至數月內），需排除可逆性原因（如甲狀腺功能異常、維生素B12缺乏、腦腫瘤、正常壓力腦積水等），應優先轉介醫療評估。",
+      "evidence_or_policy_basis": "香港認知障礙症協會建議65歲以上長者定期進行認知功能篩查。早期診斷和干預（包括認知訓練、藥物治療）可延緩疾病進展。",
+      "human_review_needed": false,
+      "version": "1.0",
+      "last_updated": "2026-05-25"
+    },
+    {
+      "rule_id": "CG-004",
+      "dimension": "認知溝通",
+      "risk_level": "medium",
+      "trigger_condition": "長者有疑似認知退化的跡象，家屬/照顧者需要教育及支援",
+      "required_inputs": [
+        "認知功能評估結果（如有）",
+        "照顧者壓力程度",
+        "家屬對認知障礙症的認識程度"
+      ],
+      "recommended_resource_types": [
+        "District Elderly Community Centre",
+        "Carer Support Service"
+      ],
+      "matching_logic": "推薦長者中心的照顧者支援小組及認知障礙症講座；推薦照顧者支援服務提供教育及暫息服務",
+      "priority_score": 72,
+      "recommendation_title": "照顧者教育及認知障礙症支援",
+      "recommendation_reason_template_zh": "{{長者姓名}}有疑似認知退化跡象，照顧者需要了解認知障礙症的基本知識及照顧技巧。",
+      "recommendation_reason_template_en": "{{elderly_name}} shows possible signs of cognitive decline. Carers need basic knowledge about dementia and caregiving skills.",
+      "action_template_zh": "建議社工：（1）轉介照顧者參加{{地區名}}長者地區中心或鄰舍中心的照顧者支援小組；（2）推薦認知障礙症照顧技巧訓練課程；（3）提供認知障礙症社區資源資訊。",
+      "action_template_en": "Recommend social worker to: (1) Refer carer to {{district}} DECC/NEC carer support group; (2) Recommend dementia caregiving skills training; (3) Provide dementia community resources information.",
+      "escalation_needed": false,
+      "safety_warning": null,
+      "evidence_or_policy_basis": "香港認知障礙症協會及多家NGO提供照顧者教育及支援服務。研究表明照顧者教育能有效減輕照顧者負擔及改善照顧品質。",
+      "human_review_needed": false,
+      "version": "1.0",
+      "last_updated": "2026-05-25"
+    },
+    {
+      "rule_id": "SS-001",
+      "dimension": "社會支持",
+      "risk_level": "high",
+      "trigger_condition": "長者獨居且缺乏照顧者",
+      "required_inputs": [
+        "居住情況（獨居/與家人同住）",
+        "是否有定期探訪",
+        "緊急聯絡人",
+        "健康狀況"
+      ],
+      "recommended_resource_types": [
+        "District Elderly Community Centre",
+        "Neighbourhood Elderly Centre",
+        "Emergency Support Service",
+        "Integrated Home Care Services Team"
+      ],
+      "matching_logic": "推薦長者中心定期探訪；推薦緊急支援服務（平安鐘等）；如有生活照顧需要可轉介家居照顧服務",
+      "priority_score": 85,
+      "recommendation_title": "獨居長者安全支援",
+      "recommendation_reason_template_zh": "{{長者姓名}}為獨居長者，缺乏照顧者{{如適用：，且患有{{慢性病清單}}}}。獨居長者如遇突發健康事件或意外，獲得及時救援的風險較高。",
+      "recommendation_reason_template_en": "{{elderly_name}} lives alone without a carer{{if_applicable: and has {{condition_list}}}}. Elderly living alone are at higher risk of delayed rescue in case of health emergencies or accidents.",
+      "action_template_zh": "建議社工：（1）協助{{長者姓名}}登記{{地區名}}長者地區中心，接受定期探訪服務；（2）評估是否需要安裝平安鐘或其他緊急支援裝置；（3）如有生活照顧需要，可協助申請綜合家居照顧服務。",
+      "action_template_en": "Recommend social worker to: (1) Help {{elderly_name}} register at {{district}} DECC for regular visits; (2) Assess need for personal emergency alarm; (3) Apply for IHC if daily care support needed.",
+      "escalation_needed": false,
+      "safety_warning": null,
+      "evidence_or_policy_basis": "社會福利署「獨居長者及雙老隱蔽長者」支援服務。香港平安鐘服務由多家NGO營運，為獨居長者提供24小時緊急支援。",
+      "human_review_needed": false,
+      "version": "1.0",
+      "last_updated": "2026-05-25"
+    },
+    {
+      "rule_id": "SS-002",
+      "dimension": "社會支持",
+      "risk_level": "high",
+      "trigger_condition": "照顧者壓力大，出現身心疲憊、焦慮或抑鬱跡象",
+      "required_inputs": [
+        "照顧者壓力評估（Zarit照顧者負擔量表或類似）",
+        "照顧時間長度",
+        "照顧者自身健康狀況",
+        "長者依賴程度"
+      ],
+      "recommended_resource_types": [
+        "Carer Support Service",
+        "District Elderly Community Centre"
+      ],
+      "matching_logic": "推薦照顧者支援服務提供諮詢、訓練及暫息服務；推薦長者中心提供照顧者小組",
+      "priority_score": 82,
+      "recommendation_title": "照顧者壓力支援",
+      "recommendation_reason_template_zh": "{{照顧者姓名}}照顧{{長者姓名}}已{{照顧時間}}，目前出現{{壓力症狀}}等壓力徵兆。照顧者身心健康直接影響照顧品質，需要適當支援。",
+      "recommendation_reason_template_en": "{{carer_name}} has been caring for {{elderly_name}} for {{duration}} and shows signs of stress including {{stress_symptoms}}. Carer wellbeing directly affects care quality. Support is needed.",
+      "action_template_zh": "建議社工：（1）轉介{{照顧者姓名}}至{{地區名}}的照顧者支援服務，獲得諮詢及情緒支援；（2）安排暫息服務（如日間護理中心或暫托服務），讓照顧者得到休息；（3）推薦參加照顧者互助小組。",
+      "action_template_en": "Recommend social worker to: (1) Refer {{carer_name}} to {{district}} carer support service for counselling and emotional support; (2) Arrange respite services (day care or temporary residential care); (3) Recommend carer support groups.",
+      "escalation_needed": false,
+      "safety_warning": "如照顧者出現嚴重情緒問題（如哭訴不想繼續照顧、對長者表達憤怒），需警惕長者受虐待風險，見升級規則。",
+      "evidence_or_policy_basis": "香港社會福利署「照顧者支援服務」為照顧者提供資訊、培訓、輔導及暫息服務。研究顯示照顧者支援可有效減輕照顧者負擔。",
+      "human_review_needed": false,
+      "version": "1.0",
+      "last_updated": "2026-05-25"
+    },
+    {
+      "rule_id": "SS-003",
+      "dimension": "社會支持",
+      "risk_level": "medium",
+      "trigger_condition": "長者很少外出，社交孤立",
+      "required_inputs": [
+        "外出頻率",
+        "社交活動參與情況",
+        "是否有定期探訪",
+        "興趣及過往活動"
+      ],
+      "recommended_resource_types": [
+        "District Elderly Community Centre",
+        "Neighbourhood Elderly Centre"
+      ],
+      "matching_logic": "推薦就近的長者地區中心或鄰舍中心參加社交及康樂活動",
+      "priority_score": 68,
+      "recommendation_title": "社交孤立支援",
+      "recommendation_reason_template_zh": "{{長者姓名}}很少外出{{如適用：，平均每週外出少於{{次數}}次}}。社交孤立與身心健康下降、認知退化加速及死亡風險增加有關。",
+      "recommendation_reason_template_en": "{{elderly_name}} rarely goes out{{if_applicable: fewer than {{number}} times per week}}. Social isolation is associated with decline in physical and mental health, accelerated cognitive decline and increased mortality risk.",
+      "action_template_zh": "建議社工協助{{長者姓名}}聯絡{{地區名}}長者{{中心類型}}，了解適合的活動並鼓勵參與。中心提供多種社交及康樂活動，幫助長者擴闊社交網絡。",
+      "action_template_en": "Recommend social worker to help {{elderly_name}} contact {{district}} {{centre_type}} to learn about suitable activities. Centres offer various social and recreational activities to help elderly expand social networks.",
+      "escalation_needed": false,
+      "safety_warning": null,
+      "evidence_or_policy_basis": "英國《柳葉刀》雜誌研究顯示社交孤立是老年健康的獨立危險因素，風險等價於每天吸15支煙。香港長者中心活動已被證實能有效減少社交孤立。",
+      "human_review_needed": false,
+      "version": "1.0",
+      "last_updated": "2026-05-25"
+    },
+    {
+      "rule_id": "SS-004",
+      "dimension": "社會支持",
+      "risk_level": "critical",
+      "trigger_condition": "突發照顧危機——主要照顧者突然生病、住院或去世，長者無人照顧",
+      "required_inputs": [
+        "危機情況描述",
+        "長者目前安全狀況",
+        "替代照顧者（如有）",
+        "長者日常生活依賴程度"
+      ],
+      "recommended_resource_types": [
+        "District Elderly Community Centre",
+        "Integrated Home Care Services Team",
+        "Day Care Centre for the Elderly",
+        "Emergency Support Service"
+      ],
+      "matching_logic": "緊急處理——立即聯絡長者中心安排短期支援；評估是否需要緊急暫托服務；安排綜合家居照顧服務",
+      "priority_score": 98,
+      "recommendation_title": "突發照顧危機緊急支援",
+      "recommendation_reason_template_zh": "【緊急】{{長者姓名}}的主要照顧者因{{危機原因}}突然無法繼續照顧，長者目前{{長者安全狀況}}。需要立即安排替代照顧方案。",
+      "recommendation_reason_template_en": "[URGENT] {{elderly_name}}'s main carer suddenly cannot continue caregiving due to {{crisis_reason}}. {{elderly_name}} is currently {{safety_status}}. Immediate alternative care arrangements are needed.",
+      "action_template_zh": "【緊急行動】建議社工：（1）立即聯絡{{地區名}}長者地區中心，安排緊急探訪及短期支援；（2）評估{{長者姓名}}的安全狀況，確認基本生活需要是否得到保障；（3）評估是否需要緊急暫托服務（可透過社會福利署緊急支援熱線18281申請）；（4）長遠方案：協助申請綜合家居照顧服務或日間護理中心。",
+      "action_template_en": "[URGENT ACTION] Recommend social worker to: (1) Immediately contact {{district}} DECC for emergency visit and short-term support; (2) Assess {{elderly_name}}'s safety and basic needs; (3) Evaluate need for emergency respite (apply via SWD hotline 18281); (4) Long-term: apply for IHC or day care.",
+      "escalation_needed": true,
+      "safety_warning": "此為緊急情況。如長者目前無法自行滿足基本生活需要（如進食、服藥、如廁），需立即安排到戶支援或暫託安置。",
+      "evidence_or_policy_basis": "社會福利署設有「緊急支援服務」及18281熱線，為面對突發危機的長者提供即時援助。暫托服務可透過安老服務統一評估機制或緊急渠道申請。",
+      "human_review_needed": true,
+      "version": "1.0",
+      "last_updated": "2026-05-25"
+    }
+  ],
+  "template_library": [
+    {
+      "template_id": "TPL-001",
+      "category": "慢病管理",
+      "purpose_zh": "推薦慢性病管理服務時使用",
+      "purpose_en": "Used when recommending chronic disease management services",
+      "template_zh": "根據評估結果，{{長者姓名}}在慢性病管理方面需要跟進。我們建議聯絡{{資源名稱}}（電話：{{電話}}，地址：{{地址}}），參加他們的{{服務名稱}}。{{補充說明}}。如需協助預約或陪同就診，社工可以提供支援。",
+      "template_en": "Based on the assessment, {{elderly_name}} needs follow-up in chronic disease management. We recommend contacting {{resource_name}} (Tel: {{phone}}, Address: {{address}}) for their {{service_name}}. {{additional_notes}}. Social workers can assist with appointment booking or accompaniment.",
+      "variables": [
+        "長者姓名",
+        "資源名稱",
+        "電話",
+        "地址",
+        "服務名稱",
+        "補充說明"
+      ]
+    },
+    {
+      "template_id": "TPL-002",
+      "category": "跌倒風險",
+      "purpose_zh": "推薦防跌服務時使用",
+      "purpose_en": "Used when recommending fall prevention services",
+      "template_zh": "{{長者姓名}}在跌倒預防方面有需求。我們建議：（1）聯絡{{資源名稱}}（電話：{{電話}}）進行跌倒風險評估；（2）安排家居安全評估，改善居家環境；（3）參加防跌運動訓練。社工可以協助安排轉介及陪同。",
+      "template_en": "{{elderly_name}} has fall prevention needs. We recommend: (1) Contact {{resource_name}} (Tel: {{phone}}) for fall risk assessment; (2) Arrange home safety assessment; (3) Join fall prevention exercise training. Social workers can assist with referrals.",
+      "variables": [
+        "長者姓名",
+        "資源名稱",
+        "電話"
+      ]
+    },
+    {
+      "template_id": "TPL-003",
+      "category": "生活能力",
+      "purpose_zh": "推薦家居照顧服務時使用",
+      "purpose_en": "Used when recommending home care services",
+      "template_zh": "根據評估，{{長者姓名}}在日常生活方面需要支援。我們建議申請{{服務名稱}}，該服務由{{營運機構}}提供，包括{{服務內容}}。申請需透過「安老服務統一評估機制」，社工可以協助安排評估。",
+      "template_en": "Based on the assessment, {{elderly_name}} needs daily living support. We recommend applying for {{service_name}}, provided by {{operator}}, including {{service_content}}. Application requires Standardised Care Need Assessment Mechanism. Social workers can assist with the assessment.",
+      "variables": [
+        "長者姓名",
+        "服務名稱",
+        "營運機構",
+        "服務內容"
+      ]
+    },
+    {
+      "template_id": "TPL-004",
+      "category": "認知溝通",
+      "purpose_zh": "推薦認知評估及訓練服務時使用",
+      "purpose_en": "Used when recommending cognitive assessment and training",
+      "template_zh": "{{長者姓名}}在認知功能方面需要進一步評估。我們建議盡快聯絡{{資源名稱}}（電話：{{電話}}）進行認知功能篩查。如篩查結果顯示需要進一步跟進，會轉介至專科門診。同時建議參加長者中心的認知訓練活動，幫助維持腦部活力。",
+      "template_en": "{{elderly_name}} needs further cognitive assessment. We recommend promptly contacting {{resource_name}} (Tel: {{phone}}) for cognitive screening. If results indicate follow-up needed, referral to specialist clinic will be arranged. Meanwhile, participation in cognitive training activities at elderly centres is recommended.",
+      "variables": [
+        "長者姓名",
+        "資源名稱",
+        "電話"
+      ]
+    },
+    {
+      "template_id": "TPL-005",
+      "category": "社會支持",
+      "purpose_zh": "推薦社區支援及照顧者服務時使用",
+      "purpose_en": "Used when recommending community support and carer services",
+      "template_zh": "{{長者姓名}}在社會支持方面有需求。我們建議：（1）聯絡{{資源名稱}}（電話：{{電話}}）登記為會員，接受定期探訪及參加活動；（2）如為照顧者，可參加照顧者支援小組；（3）如有緊急需要，可致電社會福利署熱線18281。",
+      "template_en": "{{elderly_name}} has social support needs. We recommend: (1) Contact {{resource_name}} (Tel: {{phone}}) to register as member for regular visits and activities; (2) Carers can join carer support groups; (3) For emergencies, call SWD hotline 18281.",
+      "variables": [
+        "長者姓名",
+        "資源名稱",
+        "電話"
+      ]
+    },
+    {
+      "template_id": "TPL-006",
+      "category": "緊急升級",
+      "purpose_zh": "需要緊急升級處理時使用",
+      "purpose_en": "Used when urgent escalation is needed",
+      "template_zh": "【注意】{{長者姓名}}的情況需要緊急跟進。{{升級原因}}。建議社工立即採取以下行動：{{建議行動}}。如長者目前有即時安全風險，請致電999或陪同長者到最近的急症室求醫。",
+      "template_en": "[ATTENTION] {{elderly_name}}'s situation requires urgent follow-up. {{escalation_reason}}. Recommend social worker to immediately: {{recommended_actions}}. If there is immediate safety risk, call 999 or accompany the elderly to the nearest A&E.",
+      "variables": [
+        "長者姓名",
+        "升級原因",
+        "建議行動"
+      ]
+    },
+    {
+      "template_id": "TPL-007",
+      "category": "綜合建議",
+      "purpose_zh": "多維度問題的綜合建議",
+      "purpose_en": "Comprehensive recommendation for multi-dimensional issues",
+      "template_zh": "綜合評估結果顯示，{{長者姓名}}在以下方面有需求：{{需求清單}}。我們建議按優先次序處理：{{優先建議}}。社工會協助長者制定個人化支援計劃，並跟進各項服務轉介。",
+      "template_en": "Comprehensive assessment shows {{elderly_name}} has needs in the following areas: {{needs_list}}. We recommend addressing them in order of priority: {{priority_recommendations}}. Social workers will assist in developing a personalised support plan.",
+      "variables": [
+        "長者姓名",
+        "需求清單",
+        "優先建議"
+      ]
+    }
+  ],
+  "risk_tags_dictionary": [
+    {
+      "tag_code": "DM-01",
+      "tag_name_zh": "高血壓",
+      "tag_name_en": "Hypertension",
+      "dimension": "慢性病管理",
+      "description_zh": "已診斷或懷疑患有高血壓",
+      "description_en": "Diagnosed or suspected hypertension"
+    },
+    {
+      "tag_code": "DM-02",
+      "tag_name_zh": "糖尿病",
+      "tag_name_en": "Diabetes Mellitus",
+      "dimension": "慢性病管理",
+      "description_zh": "已診斷或懷疑患有糖尿病",
+      "description_en": "Diagnosed or suspected diabetes mellitus"
+    },
+    {
+      "tag_code": "DM-03",
+      "tag_name_zh": "高血脂",
+      "tag_name_en": "Hyperlipidaemia",
+      "dimension": "慢性病管理",
+      "description_zh": "已診斷或懷疑患有高血脂",
+      "description_en": "Diagnosed or suspected hyperlipidaemia"
+    },
+    {
+      "tag_code": "DM-04",
+      "tag_name_zh": "多重慢病",
+      "tag_name_en": "Multiple Chronic Conditions",
+      "dimension": "慢性病管理",
+      "description_zh": "同時患有三種或以上慢性病",
+      "description_en": "Having three or more chronic conditions simultaneously"
+    },
+    {
+      "tag_code": "DM-05",
+      "tag_name_zh": "沒有固定家庭醫生",
+      "tag_name_en": "No Regular Doctor",
+      "dimension": "慢性病管理",
+      "description_zh": "沒有固定的基層醫療服務提供者",
+      "description_en": "No regular primary healthcare provider"
+    },
+    {
+      "tag_code": "DM-06",
+      "tag_name_zh": "不清楚藥物用途",
+      "tag_name_en": "Medication Knowledge Deficit",
+      "dimension": "慢性病管理",
+      "description_zh": "不了解所服藥物的名稱、用途或劑量",
+      "description_en": "Unable to describe medication names, purposes or dosages"
+    },
+    {
+      "tag_code": "DM-07",
+      "tag_name_zh": "長期未復診",
+      "tag_name_en": "Missed Follow-up",
+      "dimension": "慢性病管理",
+      "description_zh": "患有慢性病但超過12個月未覆診",
+      "description_en": "Has chronic condition but no follow-up for over 12 months"
+    },
+    {
+      "tag_code": "FR-01",
+      "tag_name_zh": "過去一年跌倒",
+      "tag_name_en": "Fall in Past Year",
+      "dimension": "跌倒風險",
+      "description_zh": "過去12個月內曾跌倒",
+      "description_en": "Has fallen within the past 12 months"
+    },
+    {
+      "tag_code": "FR-02",
+      "tag_name_zh": "行動不穩",
+      "tag_name_en": "Unsteady Gait",
+      "dimension": "跌倒風險",
+      "description_zh": "行走時步態不穩或速度緩慢",
+      "description_en": "Unsteady or slow gait when walking"
+    },
+    {
+      "tag_code": "FR-03",
+      "tag_name_zh": "需要助行器",
+      "tag_name_en": "Requires Mobility Aid",
+      "dimension": "跌倒風險",
+      "description_zh": "需要拐杖、助行架或輪椅輔助行動",
+      "description_en": "Requires cane, walker or wheelchair for mobility"
+    },
+    {
+      "tag_code": "FR-04",
+      "tag_name_zh": "害怕外出",
+      "tag_name_en": "Fear of Going Out",
+      "dimension": "跌倒風險",
+      "description_zh": "因害怕跌倒而不願外出",
+      "description_en": "Reluctant to go out due to fear of falling"
+    },
+    {
+      "tag_code": "ADL-01",
+      "tag_name_zh": "做飯困難",
+      "tag_name_en": "Difficulty Cooking",
+      "dimension": "生活能力",
+      "description_zh": "在準備膳食方面有困難",
+      "description_en": "Has difficulty preparing meals"
+    },
+    {
+      "tag_code": "ADL-02",
+      "tag_name_zh": "洗澡困難",
+      "tag_name_en": "Difficulty Bathing",
+      "dimension": "生活能力",
+      "description_zh": "在洗澡方面有困難或安全顧慮",
+      "description_en": "Has difficulty or safety concerns with bathing"
+    },
+    {
+      "tag_code": "ADL-03",
+      "tag_name_zh": "外出困難",
+      "tag_name_en": "Difficulty Going Out",
+      "dimension": "生活能力",
+      "description_zh": "外出有困難，缺乏交通或體力不支",
+      "description_en": "Has difficulty going out due to lack of transport or stamina"
+    },
+    {
+      "tag_code": "ADL-04",
+      "tag_name_zh": "服藥管理困難",
+      "tag_name_en": "Medication Management Difficulty",
+      "dimension": "生活能力",
+      "description_zh": "經常漏服或服錯藥物",
+      "description_en": "Frequently misses doses or takes incorrect medications"
+    },
+    {
+      "tag_code": "CG-01",
+      "tag_name_zh": "記憶力下降",
+      "tag_name_en": "Memory Decline",
+      "dimension": "認知溝通",
+      "description_zh": "自我報告或照顧者反映記憶力下降",
+      "description_en": "Self-reported or carer-reported memory decline"
+    },
+    {
+      "tag_code": "CG-02",
+      "tag_name_zh": "經常忘記吃藥",
+      "tag_name_en": "Forgets Medications",
+      "dimension": "認知溝通",
+      "description_zh": "經常因記憶問題遺漏服藥",
+      "description_en": "Frequently misses medications due to memory issues"
+    },
+    {
+      "tag_code": "CG-03",
+      "tag_name_zh": "表達困難",
+      "tag_name_en": "Expressive Difficulty",
+      "dimension": "認知溝通",
+      "description_zh": "言語含糊、找詞困難或理解能力下降",
+      "description_en": "Slurred speech, word-finding difficulty or decreased comprehension"
+    },
+    {
+      "tag_code": "CG-04",
+      "tag_name_zh": "疑似認知退化",
+      "tag_name_en": "Suspected Cognitive Decline",
+      "dimension": "認知溝通",
+      "description_zh": "社工或照顧者懷疑長者有認知功能退化",
+      "description_en": "Social worker or carer suspects cognitive decline"
+    },
+    {
+      "tag_code": "SS-01",
+      "tag_name_zh": "獨居",
+      "tag_name_en": "Living Alone",
+      "dimension": "社會支持",
+      "description_zh": "獨居且缺乏照顧者",
+      "description_en": "Lives alone without a carer"
+    },
+    {
+      "tag_code": "SS-02",
+      "tag_name_zh": "缺乏照顧者",
+      "tag_name_en": "No Carer",
+      "dimension": "社會支持",
+      "description_zh": "沒有固定的照顧者或照顧者支援不足",
+      "description_en": "No regular carer or insufficient caregiver support"
+    },
+    {
+      "tag_code": "SS-03",
+      "tag_name_zh": "照顧者壓力大",
+      "tag_name_en": "Carer Stress",
+      "dimension": "社會支持",
+      "description_zh": "照顧者出現身心疲憊、焦慮或抑鬱",
+      "description_en": "Carer shows physical/emotional exhaustion, anxiety or depression"
+    },
+    {
+      "tag_code": "SS-04",
+      "tag_name_zh": "很少外出",
+      "tag_name_en": "Rarely Goes Out",
+      "dimension": "社會支持",
+      "description_zh": "社交孤立，極少外出",
+      "description_en": "Socially isolated, rarely goes out"
+    },
+    {
+      "tag_code": "SS-05",
+      "tag_name_zh": "突發照顧危機",
+      "tag_name_en": "Caregiving Crisis",
+      "dimension": "社會支持",
+      "description_zh": "主要照顧者突然無法繼續照顧",
+      "description_en": "Main carer suddenly unable to continue caregiving"
+    },
+    {
+      "tag_code": "ES-01",
+      "tag_name_zh": "急症（胸痛/氣促/意識混亂）",
+      "tag_name_en": "Emergency (Chest Pain/Shortness of Breath/Confusion)",
+      "dimension": "安全升級",
+      "description_zh": "出現胸痛、嚴重氣促或意識混亂等急症",
+      "description_en": "Experiencing chest pain, severe shortness of breath or confusion"
+    },
+    {
+      "tag_code": "ES-02",
+      "tag_name_zh": "疑似長者虐待",
+      "tag_name_en": "Suspected Elder Abuse",
+      "dimension": "安全升級",
+      "description_zh": "有跡象顯示長者正遭受虐待或嚴重疏忽照顧",
+      "description_en": "Signs suggest elder abuse or severe neglect"
+    },
+    {
+      "tag_code": "ES-03",
+      "tag_name_zh": "嚴重抑鬱/自殺意念",
+      "tag_name_en": "Severe Depression/Suicidal Ideation",
+      "dimension": "安全升級",
+      "description_zh": "出現嚴重抑鬱症狀或自殺意念",
+      "description_en": "Showing severe depression symptoms or suicidal ideation"
+    },
+    {
+      "tag_code": "ES-04",
+      "tag_name_zh": "照顧者崩潰",
+      "tag_name_en": "Carer Breakdown",
+      "dimension": "安全升級",
+      "description_zh": "照顧者已濒臨崩潰且長者無人照顧",
+      "description_en": "Carer at breaking point with no alternative care for elderly"
+    }
+  ],
+  "escalation_rules": [
+    {
+      "escalation_id": "ESC-001",
+      "trigger_category": "醫療急症",
+      "trigger_condition_zh": "長者出現胸痛、嚴重氣促、突然無力/麻木（疑似中風）、持續嘔吐、劇烈腹痛、意識混亂或減退、大量出血等急性症狀",
+      "trigger_condition_en": "Elderly experiencing chest pain, severe shortness of breath, sudden weakness/numbness (suspected stroke), persistent vomiting, severe abdominal pain, confusion or decreased consciousness, heavy bleeding",
+      "action_required": "立即致電999求助或陪同到最近急症室。不要等待、不要自行判斷嚴重程度。在救護車到達前保持長者安靜及觀察。",
+      "target_professional": "醫院急症室 / 救護車服務",
+      "target_hotline": "999",
+      "response_time": "立即",
+      "documentation_required": "記錄症狀發生時間、長者表現、已採取的措施。通知主管。",
+      "post_escalation_followup": "長者出院後需重新評估各項照顧需求，包括是否需要增加家居照顧服務、復康服務等。更新長者評估記錄。",
+      "version": "1.0",
+      "last_updated": "2026-05-25"
+    },
+    {
+      "escalation_id": "ESC-002",
+      "trigger_category": "疑似長者虐待或嚴重疏忽照顧",
+      "trigger_condition_zh": "有合理跡象顯示長者正遭受身體虐待、精神虐待、經濟剝削或嚴重疏忽照顧（如未滿足基本生活需要、未提供必要醫療照顧）",
+      "trigger_condition_en": "Reasonable signs indicate elderly is experiencing physical abuse, psychological abuse, financial exploitation or severe neglect (e.g. failure to meet basic needs or provide necessary medical care)",
+      "action_required": "如長者有即時危險，致電999。如無即時危險，立即向社工主管報告。根據《處理虐待長者個案程序指引》進行。避免在受害者面前與涉嫌者對質。確保長者安全為首要考慮。",
+      "target_professional": "社會福利署保護家庭及兒童服務課 / 警方（如有即時危險）",
+      "target_hotline": "SWD熱線：2343 2255（綜合家庭服務）/ 999（緊急）",
+      "response_time": "24小時內向主管報告；即時危險時立即行動",
+      "documentation_required": "詳細記錄觀察到的跡象（包括身體傷痕的描述及照片——需獲同意）、長者陳述、疑似施虐者資料、已採取的措施。所有記錄需客觀、具體。",
+      "post_escalation_followup": "配合社會福利署的保護程序跟進。評估長者是否需要暫時安置、緊急支援服務。提供長者情緒支援。定期跟進個案狀況。",
+      "version": "1.0",
+      "last_updated": "2026-05-25"
+    },
+    {
+      "escalation_id": "ESC-003",
+      "trigger_category": "嚴重抑鬱或自殺風險",
+      "trigger_condition_zh": "長者表達自殺念頭、無助感或絕望感；出現嚴重抑鬱症狀（持續悲傷、食慾喪失、失眠、對一切失去興趣）；行為異常（如交代後事、處理財產、告別）",
+      "trigger_condition_en": "Elderly expresses suicidal thoughts, helplessness or hopelessness; shows severe depression symptoms (persistent sadness, loss of appetite, insomnia, anhedonia); unusual behaviour (making arrangements, distributing possessions, saying goodbye)",
+      "action_required": "如長者有即時自殺計劃或行動，致電999並陪伴長者。如無即時危險，立即通知社工主管，安排緊急精神健康評估。轉介醫院管理局精神健康服務或私家精神科。絕對不要讓長者獨處。",
+      "target_professional": "醫院精神健康服務 / 醫院管理局精神科急症服務 / 香港撒瑪利亞防止自殺會",
+      "target_hotline": "香港撒瑪利亞防止自殺會：2389 2222 / 醫院管理局精神健康專線：2466 7350 / 999（緊急）",
+      "response_time": "即時（如有即時危險）；24小時內安排評估（如無即時危險但有風險）",
+      "documentation_required": "記錄長者的具體陳述（原話）、行為觀察、評估使用的工具（如PHQ-9分數）、已採取的措施、跟進計劃。",
+      "post_escalation_followup": "確保長者持續接受跟進。安排定期探訪及情緒支援。通知家屬（經長者同意）。建立安全計劃（移除危險物品、設定緊急聯絡人等）。定期重新評估自殺風險。",
+      "version": "1.0",
+      "last_updated": "2026-05-25"
+    },
+    {
+      "escalation_id": "ESC-004",
+      "trigger_category": "照顧者濒臨崩潰",
+      "trigger_condition_zh": "主要照顧者明確表示無法繼續照顧、出現嚴重情緒崩潰、或因突發情況（如照顧者住院/去世）導致長者完全無人照顧",
+      "trigger_condition_en": "Main carer explicitly states inability to continue, shows severe emotional breakdown, or a sudden event (carer hospitalisation/death) leaves elderly completely without care",
+      "action_required": "立即評估長者安全。聯絡社會福利署緊急支援熱線18281安排短期支援。評估是否需要緊急暫託服務或入院評估。協助尋找替代照顧方案（其他家屬、支援網絡）。",
+      "target_professional": "社會福利署緊急支援服務 / 長者地區中心 / 暫託服務",
+      "target_hotline": "社會福利署緊急支援：18281",
+      "response_time": "立即評估長者安全；4小時內聯絡緊急支援",
+      "documentation_required": "記錄照顧者崩潰的原因及情況、長者目前安全狀況、已聯絡的支援服務、跟進計劃及負責人。",
+      "post_escalation_followup": "跟進緊急支援服務的落實情況。協助制定長期照顧方案（家居照顧、日間護理、院舍評估等）。為照顧者提供情緒支援及連結社區資源。安排定期跟進。",
+      "version": "1.0",
+      "last_updated": "2026-05-25"
+    }
+  ]
+}

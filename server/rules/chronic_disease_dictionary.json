@@ -1,0 +1,130 @@
+[
+  {
+    "disease_id": "DM",
+    "disease_name": "糖尿病",
+    "category": "代谢类",
+    "core_assessment": true,
+    "count_in_multimorbidity": true,
+    "disease_name_traditional": "糖尿病"
+  },
+  {
+    "disease_id": "HTN",
+    "disease_name": "高血压",
+    "category": "心血管类",
+    "core_assessment": true,
+    "count_in_multimorbidity": true,
+    "disease_name_traditional": "高血壓"
+  },
+  {
+    "disease_id": "HLD",
+    "disease_name": "高血脂 / 血脂异常",
+    "category": "代谢类",
+    "core_assessment": true,
+    "count_in_multimorbidity": true,
+    "disease_name_traditional": "高血脂 / 血脂異常"
+  },
+  {
+    "disease_id": "CHD",
+    "disease_name": "冠心病 / 心肌梗死 / 心绞痛",
+    "category": "心脑血管类",
+    "core_assessment": true,
+    "count_in_multimorbidity": true,
+    "disease_name_traditional": "冠心病 / 心肌梗死 / 心绞痛"
+  },
+  {
+    "disease_id": "STROKE",
+    "disease_name": "中风 / TIA",
+    "category": "心脑血管类",
+    "core_assessment": true,
+    "count_in_multimorbidity": true,
+    "disease_name_traditional": "中風 / TIA"
+  },
+  {
+    "disease_id": "CKD",
+    "disease_name": "慢性肾病",
+    "category": "肾脏类",
+    "core_assessment": true,
+    "count_in_multimorbidity": true,
+    "disease_name_traditional": "慢性腎病"
+  },
+  {
+    "disease_id": "COPD",
+    "disease_name": "慢阻肺",
+    "category": "呼吸类",
+    "core_assessment": true,
+    "count_in_multimorbidity": true,
+    "disease_name_traditional": "慢阻肺"
+  },
+  {
+    "disease_id": "ASTHMA",
+    "disease_name": "哮喘",
+    "category": "呼吸类",
+    "core_assessment": true,
+    "count_in_multimorbidity": true,
+    "disease_name_traditional": "哮喘"
+  },
+  {
+    "disease_id": "HF",
+    "disease_name": "心力衰竭",
+    "category": "心血管类",
+    "core_assessment": true,
+    "count_in_multimorbidity": true,
+    "disease_name_traditional": "心力衰竭"
+  },
+  {
+    "disease_id": "AF",
+    "disease_name": "房颤 / 心律失常",
+    "category": "心血管类",
+    "core_assessment": true,
+    "count_in_multimorbidity": true,
+    "disease_name_traditional": "房颤 / 心律失常"
+  },
+  {
+    "disease_id": "OP",
+    "disease_name": "骨质疏松 / 骨折史",
+    "category": "骨骼类",
+    "core_assessment": true,
+    "count_in_multimorbidity": true,
+    "disease_name_traditional": "骨质疏松 / 骨折史"
+  },
+  {
+    "disease_id": "DEMENTIA",
+    "disease_name": "失智症 / 认知障碍",
+    "category": "认知类",
+    "core_assessment": true,
+    "count_in_multimorbidity": true,
+    "disease_name_traditional": "失智症 / 认知障礙"
+  },
+  {
+    "disease_id": "DEP_ANX",
+    "disease_name": "抑郁 / 焦虑记录",
+    "category": "心理类",
+    "core_assessment": true,
+    "count_in_multimorbidity": true,
+    "disease_name_traditional": "抑鬱 / 焦慮記錄"
+  },
+  {
+    "disease_id": "CANCER",
+    "disease_name": "癌症史",
+    "category": "肿瘤类",
+    "core_assessment": true,
+    "count_in_multimorbidity": true,
+    "disease_name_traditional": "癌症史"
+  },
+  {
+    "disease_id": "GOUT",
+    "disease_name": "痛风 / 高尿酸",
+    "category": "代谢类",
+    "core_assessment": true,
+    "count_in_multimorbidity": true,
+    "disease_name_traditional": "痛風 / 高尿酸"
+  },
+  {
+    "disease_id": "LIVER",
+    "disease_name": "慢性肝病",
+    "category": "肝脏类",
+    "core_assessment": true,
+    "count_in_multimorbidity": true,
+    "disease_name_traditional": "慢性肝病"
+  }
+]
