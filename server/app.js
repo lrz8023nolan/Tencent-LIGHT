@@ -57,6 +57,7 @@ app.use('/api/schedules', require('./routes/schedule'));
 app.use('/api/folders', require('./routes/folder'));
 app.use('/api/export', require('./routes/export'));
 app.use('/api/rules', require('./routes/rules'));
+app.use('/api/admin', require('./routes/admin'));
 
 // API 健康检查
 app.get('/api/health', (req, res) => {
