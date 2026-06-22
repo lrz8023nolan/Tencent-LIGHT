@@ -61,12 +61,19 @@ app.use('/api/admin', require('./routes/admin'));
 
 // API 健康检查
 app.get('/api/health', (req, res) => {
+  const apiKey = process.env.LLM_API_KEY || '';
   res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
     rules: ruleResult.success ? 'all_loaded' : 'partial',
     rules_missing: ruleResult.missing,
-    llm_configured: require('./services/llmClient').isConfigured()
+    llm_configured: require('./services/llmClient').isConfigured(),
+    env_debug: {
+      LLM_API_KEY_length: apiKey.length,
+      LLM_API_KEY_prefix: apiKey ? apiKey.substring(0, 5) + '...' : 'empty',
+      LLM_API_ENDPOINT: process.env.LLM_API_ENDPOINT || 'not set',
+      LLM_MODEL: process.env.LLM_MODEL || 'not set'
+    }
   });
 });
 
